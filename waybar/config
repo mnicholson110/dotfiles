@@ -1,7 +1,6 @@
 {
 	"layer": "top",
-  "output": ["DP-1"],
-  "mode": "dock",
+  "output": ["DP-2"],
 	"modules-left": ["cpu", "memory", "disk"],
 	"modules-center": ["clock"],
 	"modules-right": ["tray", "pulseaudio"],
