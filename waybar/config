@@ -1,9 +1,9 @@
 {
 	"layer": "top",
   "output": ["DP-2"],
-	"modules-left": ["tray"],
+	"modules-left": ["tray", "pulseaudio"],
 	"modules-center": ["hyprland/window"],
-	"modules-right": ["pulseaudio", "clock"],
+	"modules-right": ["clock"],
 
     "clock": {
         // "timezone": "America/New_York",
