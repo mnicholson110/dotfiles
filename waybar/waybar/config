@@ -1,6 +1,6 @@
 {
 	"layer": "top",
-  "output": ["DP-2"],
+  "output": ["DP-1"],
 	"modules-left": ["tray", "pulseaudio"],
 	"modules-center": ["hyprland/window"],
 	"modules-right": ["clock"],
