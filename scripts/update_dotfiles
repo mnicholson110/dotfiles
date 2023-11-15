@@ -1,0 +1,26 @@
+# clone dotfiles directory from github
+git clone https://github.com/mnicholson110/dotfiles.git ~/dotfiles
+
+# copy hypr files
+cp -fr ~/.config/hypr/ ~/dotfiles
+
+# copy waybar files
+cp -fr ~/.config/waybar/ ~/dotfiles
+
+# copy kitty files
+cp -fr ~/.config/kitty/ ~/dotfiles
+
+# copy nvim files
+cp -fr ~/.config/nvim/ ~/dotfiles
+
+# copy swayidle files
+# cp -fr ~/.config/swayidle/ ~/dotfiles
+
+# commit and push changes
+cd ~/dotfiles
+git add .
+git commit -m "update dotfiles"
+git push
+
+# remove dotfiles directory
+rm -rf ~/dotfiles
