@@ -1,0 +1,9 @@
+rm -fr ~/Desktop
+rm -fr ~/Documents
+rm -fr ~/Downloads
+rm -fr ~/Music
+rm -fr ~/Pictures
+rm -fr ~/Public
+rm -fr ~/Templates
+rm -fr ~/Videos
+echo "Removed pointless directories from home directory"
