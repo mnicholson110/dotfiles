@@ -2,8 +2,8 @@ ignore-empty-password
 font="GoMono Nerd Font"
 
 clock
-timestr=%R
-datestr=%a, %e of %B
+timestr=%I:%M %p
+datestr=%D
 
 image=~/.wallpapers/wallpaper.jpg
 
