@@ -16,6 +16,9 @@ cp -fr ~/.config/nvim/ ~/dotfiles
 # copy swayidle files
 cp -fr ~/.config/swayidle/ ~/dotfiles
 
+# copy swaylock files
+cp -fr ~/.config/swaylock/ ~/dotfiles
+
 # copy wlogout files
 cp -fr ~/.config/wlogout/ ~/dotfiles
 
