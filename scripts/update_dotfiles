@@ -14,7 +14,7 @@ cp -fr ~/.config/kitty/ ~/dotfiles
 cp -fr ~/.config/nvim/ ~/dotfiles
 
 # copy swayidle files
-# cp -fr ~/.config/swayidle/ ~/dotfiles
+cp -fr ~/.config/swayidle/ ~/dotfiles
 
 # copy scripts
 cp -fr /usr/local/bin/* ~/dotfiles/scripts/
