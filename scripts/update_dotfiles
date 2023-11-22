@@ -13,9 +13,6 @@ cp -fr ~/.config/kitty/ ~/dotfiles
 # copy nvim files
 cp -fr ~/.config/nvim/ ~/dotfiles
 
-# copy swayidle files
-cp -fr ~/.config/swayidle/ ~/dotfiles
-
 # copy swaylock files
 cp -fr ~/.config/swaylock/ ~/dotfiles
 
