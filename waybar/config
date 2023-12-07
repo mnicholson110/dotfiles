@@ -19,10 +19,7 @@
     },
 
     "pulseaudio": {
-        "format": "{volume}% {icon}",
-        "format-icons": {
-            "default": [""]
-        },
+        "format": "Vol: {volume}%",
         "on-click": "pavucontrol"
     },
 }
