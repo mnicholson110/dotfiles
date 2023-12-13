@@ -69,6 +69,20 @@ require('harpoon').setup({
     },
 })
 
+require('telescope').setup({
+  defaults = {
+    file_ignore_patterns = {
+      "go/pkg",
+      "go/bin",
+      "go/src",
+      "go/mod",
+      "go/sum",
+      "target",
+      "Cargo.lock",
+    },
+  },
+})
+
 vim.opt.cmdheight=0
 
 vim.cmd [[autocmd BufWritePre *.go lua vim.lsp.buf.format()]]
