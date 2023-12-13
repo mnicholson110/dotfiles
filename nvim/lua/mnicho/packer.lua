@@ -4,11 +4,6 @@ return require('packer').startup(function(use)
   use('wbthomason/packer.nvim')
 
   use({
-    'nvim-telescope/telescope.nvim', tag = '0.1.3',
-    requires = { {'nvim-lua/plenary.nvim'} }
-  })
-
-  use({
     'Mofiqul/dracula.nvim',
      as = 'dracula',
      config = function()
@@ -22,13 +17,20 @@ return require('packer').startup(function(use)
         ts_update()
       end,}
   )
-  use('theprimeagen/harpoon')
+  use {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    requires = { "nvim-lua/plenary.nvim" },
+  }
+
   use('github/copilot.vim')
+
   use({
     'williamboman/mason.nvim',
     'williamboman/mason-lspconfig.nvim',
     'neovim/nvim-lspconfig',
   })
+
   use({
     'hrsh7th/nvim-cmp',
     requires = {
@@ -39,7 +41,9 @@ return require('packer').startup(function(use)
       'hrsh7th/vim-vsnip',
     }
   })
+
   use('theprimeagen/vim-be-good')
+
   use('simrat39/rust-tools.nvim')
 
   use({
