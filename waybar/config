@@ -1,7 +1,7 @@
 {
 	"layer": "top",
   "output": ["DP-1"],
-	"modules-left": ["tray", "pulseaudio"],
+	"modules-left": ["tray", "pulseaudio"], 
 	"modules-center": ["hyprland/window"],
 	"modules-right": ["clock"],
 
@@ -22,4 +22,5 @@
         "format": "Vol: {volume}%",
         "on-click": "pavucontrol"
     },
+
 }
