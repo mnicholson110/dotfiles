@@ -1,9 +1,9 @@
 {
 	"layer": "top",
-  "output": ["DP-1"],
+  "output": ["eDP-1"],
 	"modules-left": ["tray", "pulseaudio"], 
 	"modules-center": ["hyprland/window"],
-	"modules-right": ["clock"],
+	"modules-right": ["clock", "battery"],
 
     "clock": {
         "format": "{:%Y-%m-%d %I:%M %p}",
@@ -22,5 +22,18 @@
         "format": "Vol: {volume}%",
         "on-click": "pavucontrol"
     },
+
+    "battery": {
+      "states": {
+        "good": 95,
+        "warning": 30,
+        "critical": 10
+      }, 
+      "format": "{capacity}% {icon}",
+      "format-charging": "{capacity}% ",
+      "format-plugged": "{capacity}% ",
+      "format-alt": "{time} {icon}",
+      "format-icons": ["", "", "", "", ""]
+    }
 
 }
