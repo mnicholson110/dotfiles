@@ -20,6 +20,7 @@
 
     "pulseaudio": {
         "format": "Vol: {volume}%",
+        "format-muted": "Vol: MUTE",
         "on-click": "pavucontrol"
     },
 
