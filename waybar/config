@@ -16,11 +16,4 @@
           "on-scroll-down": "shift_up"
         }
     },
-
-    "pulseaudio": {
-        "format": "Vol: {volume}%",
-        "format-muted": "Vol: MUTE",
-        "on-click": "pavucontrol"
-    },
-
 }
