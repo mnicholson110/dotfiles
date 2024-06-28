@@ -160,7 +160,7 @@
     <floatingX>0</floatingX>
     <floatingY>0</floatingY>
     <noStrut>no</noStrut>
-    <stacking>Above</stacking>
+    <stacking>Normal</stacking>
     <!-- 'Above', 'Normal', or 'Below' -->
     <direction>Vertical</direction>
     <!-- 'Vertical' or 'Horizontal' -->
@@ -174,7 +174,7 @@
   </dock>
   <keyboard>
     <!-- Define key bindings -->
-    <keybind key="A-space">
+    <keybind key="A-D">
       <action name="ShowMenu">
         <menu>root-menu</menu>
       </action>

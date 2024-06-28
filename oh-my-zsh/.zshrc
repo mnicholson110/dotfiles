@@ -7,4 +7,4 @@ plugins=(git)
 alias tt="tt -showwpm"
 source $ZSH/oh-my-zsh.sh
 source $HOME/.cargo/env
-alias ls="ls -A --color=tty"
+alias ls="ls --color=tty"
