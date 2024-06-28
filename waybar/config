@@ -1,6 +1,6 @@
 {
 	"layer": "top",
-	"modules-left": ["tray", "pulseaudio"], 
+	"modules-left": ["tray"], 
 	"modules-center": ["hyprland/window"],
 	"modules-right": ["clock"],
 
