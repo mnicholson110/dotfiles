@@ -1,7 +1,7 @@
 {
 	"layer": "top",
-  "output": ["eDP-1"],
-	"modules-left": ["tray", "pulseaudio", "battery"], 
+  "output": ["eDP-1","DP-1"],
+	"modules-left": ["tray", "battery"], 
 	"modules-center": ["hyprland/workspaces"],
 	"modules-right": ["clock"],
 

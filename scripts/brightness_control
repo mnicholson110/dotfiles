@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Function to get the current brightness 
+get_current_brightness() {
+  brightnessctl get | awk '{print int($1)}'
+}
+
+# Function to get the maximum brightness
+get_max_brightness() {
+  brightnessctl max | awk '{print int($1)}'
+}
+
+# Function to get the current brightness percentage
+get_brightness_percentage() {
+  echo $(($1 * 100 / $2))
+}
+
+# Check the input parameter
+case "$1" in
+  up)
+    # Get the current and maximum brightness
+    current_brightness=$(get_current_brightness)
+    max_brightness=$(get_max_brightness)
+    brightness_percentage=$(get_brightness_percentage $current_brightness $max_brightness)
+    
+    if [ "$brightness_percentage" -lt 100 ]; then
+      # Increase the brightness by 5%
+      brightnessctl set +5%
+      # Get the updated brightness
+      current_brightness=$(get_current_brightness)
+      brightness_percentage=$(get_brightness_percentage $current_brightness $max_brightness)
+      # Send a notification with the current brightness
+      dunstify -a "changeBrightness" -i computer-laptop -h int:value:"$brightness_percentage" "Current Brightness: ${brightness_percentage}%"
+    fi
+    ;;
+  down)
+    # Decrease the brightness by 5%
+    brightnessctl set 5%-
+    # Get the current brightness
+    current_brightness=$(get_current_brightness)
+    max_brightness=$(get_max_brightness)
+    brightness_percentage=$(get_brightness_percentage $current_brightness $max_brightness)
+    # Send a notification with the current brightness
+    dunstify -a "changeBrightness" -i computer-laptop -h int:value:"$brightness_percentage" "Current Brightness: ${brightness_percentage}%"
+    ;;
+  *)
+    echo "Usage: $0 {up|down}"
+    exit 1
+    ;;
+esac
+

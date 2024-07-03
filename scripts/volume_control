@@ -1,0 +1,45 @@
+#!/bin/bash
+
+get_current_volume() {
+  wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2 * 100)}'
+}
+
+get_mute_status() {
+  wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo "Muted" || echo "Unmuted"
+}
+
+case "$1" in
+  up)
+    current_volume=$(get_current_volume)
+    if [ "$current_volume" -lt 100 ]; then
+      wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+    fi
+    mute_status=$(get_mute_status)
+    if [ "$mute_status" == "Unmuted" ]; then
+      dunstify -a "changeVolume" -i audio-volume-high -h int:value:"$current_volume" "Volume: ${current_volume}%"
+    fi
+    ;;
+  down)
+    current_volume=$(get_current_volume)
+    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+    mute_status=$(get_mute_status)
+    if [ "$mute_status" == "Unmuted" ]; then
+      dunstify -a "changeVolume" -i audio-volume-high -h int:value:"$current_volume" "Volume: ${current_volume}%"
+    fi
+    ;;
+  mute)
+    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    mute_status=$(get_mute_status)
+    if [ "$mute_status" == "Muted" ]; then
+      dunstify -a "changeVolume" -i audio-volume-muted "Volume: Muted"
+    else
+      current_volume=$(get_current_volume)
+      dunstify -a "changeVolume" -i audio-volume-high -h int:value:"$current_volume" "Volume: Unmuted"
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {up|down|mute}"
+    exit 1
+    ;;
+esac
+
