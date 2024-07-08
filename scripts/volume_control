@@ -10,7 +10,9 @@ get_mute_status() {
 
 case "$1" in
   up)
-    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+    if [ "$(get_current_volume)" -lt 100 ]; then
+      wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+    fi
     current_volume=$(get_current_volume)
     mute_status=$(get_mute_status)
     if [ "$mute_status" == "Unmuted" ]; then
