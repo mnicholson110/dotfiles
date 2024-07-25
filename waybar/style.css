@@ -3,23 +3,25 @@
 	font-weight: 700;
 	font-size: 12px;
 	margin-top: 2px;
-	margin-left: 4px;
-	margin-right: 4px;
+	margin-left: 2px;
+	margin-right: 2px;
+	margin-bottom: 2px;
 	min-height: 0px;
 }
 
 
 window#waybar {
-	background-color: transparent;
+	background-color: rgba(0, 0, 0, 0.0);
 }
 
 
 #tray,
-#clock {
-	padding: 0px 4px;
+#clock,
+#window {
+	padding: 0px 2px;
 	color: #ffffff;
-	border-radius: 3px;
-  background-color: transparent;
+	border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 
