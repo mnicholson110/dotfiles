@@ -205,17 +205,17 @@
     </keybind>
     <keybind key="XF86AudioRaiseVolume">
       <action name="Execute">
-        <command>wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%+</command>
+      <command>/home/matt/.dotfiles/scripts/volume_control up</command>
       </action>
     </keybind>
     <keybind key="XF86AudioLowerVolume">
       <action name="Execute">
-        <command>wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%-</command>
+        <command>/home/matt/.dotfiles/scripts/volume_control down</command>
       </action>
     </keybind>
     <keybind key="XF86AudioMute">
       <action name="Execute">
-        <command>wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle</command>
+        <command>/home/matt/.dotfiles/scripts/volume_control mute</command>
       </action>
     </keybind>
   </keyboard>
