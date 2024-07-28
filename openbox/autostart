@@ -20,5 +20,5 @@ nitrogen --restore &
 tint2 &
 steam -silent &
 blueman-applet &
-discord &
+discord --start-minimized &
 volumeicon &
