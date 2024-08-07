@@ -22,3 +22,4 @@ steam -silent &
 blueman-applet &
 discord --start-minimized &
 volumeicon &
+./.screenlayout/layout.sh &
