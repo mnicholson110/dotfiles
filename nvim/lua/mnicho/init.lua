@@ -17,6 +17,11 @@ require("mason-lspconfig").setup_handlers {
   end,
   -- Next, you can provide a dedicated handler for specific servers.
   -- For example, a handler override for the `rust_analyzer`:
+  ["jdtls"] = function ()
+    require("lspconfig").jdtls.setup {
+      cmd = { "jdtls" }
+    }
+  end,
   ["rust_analyzer"] = function ()
      require("rust-tools").setup()
   end,

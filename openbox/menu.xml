@@ -29,11 +29,11 @@
       <command>thunar</command>
     </action>
   </item>
-  <item label="Unreal Engine">
+  <!--  <item label="Unreal Engine">
     <action name="Execute">
     <command>/home/matt/.unreal/Engine/Binaries/Linux/UnrealEditor</command>
     </action>
-  </item>
+    </item>-->
   <separator />
   <item label="OBConf">
     <action name="Execute">
