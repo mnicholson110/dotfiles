@@ -1,1 +1,1 @@
-require("mnicho")
+require("config.lazy")
