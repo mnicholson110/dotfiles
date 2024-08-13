@@ -10,3 +10,10 @@ vim.keymap.set("n", "<C-j>", ":wincmd j<CR>")
 vim.keymap.set("n", "<C-h>", ":wincmd h<CR>")
 vim.keymap.set("n", "<C-l>", ":wincmd l<CR>")
 vim.keymap.set("n", "<C-Return>", ":vsplit<CR>")
+
+
+local builtin = require("telescope.builtin")
+vim.keymap.set("n", "<leader>h", builtin.find_files, {})
+vim.keymap.set("n", "<leader>j", builtin.live_grep, {})
+vim.keymap.set("n", "<leader>k", builtin.buffers, {})
+vim.keymap.set("n", "<leader>l", builtin.help_tags, {})
