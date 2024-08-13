@@ -1,17 +1,19 @@
-vim.g.mapleader = " "
-vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
-vim.keymap.set("t", "<leader>pv", vim.cmd.Ex)
-
+vim.keymap.set("n", "<leader>pv", vim.cmd.Oil)
+vim.keymap.set("t", "<leader>pv", vim.cmd.Oil)
 vim.keymap.set("v", "<C-j>", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "<C-k>", ":m '<-2<CR>gv=gv")
-
 vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-u>", "<C-u>zz")
-
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>")
-
 vim.keymap.set("n", "<C-k>", ":wincmd k<CR>")
 vim.keymap.set("n", "<C-j>", ":wincmd j<CR>")
 vim.keymap.set("n", "<C-h>", ":wincmd h<CR>")
 vim.keymap.set("n", "<C-l>", ":wincmd l<CR>")
 vim.keymap.set("n", "<C-Return>", ":vsplit<CR>")
+
+
+local builtin = require("telescope.builtin")
+vim.keymap.set("n", "<leader>h", builtin.find_files, {})
+vim.keymap.set("n", "<leader>j", builtin.live_grep, {})
+vim.keymap.set("n", "<leader>k", builtin.buffers, {})
+vim.keymap.set("n", "<leader>l", builtin.help_tags, {})

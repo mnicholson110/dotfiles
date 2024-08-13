@@ -30,7 +30,7 @@ case "$1" in
       current_brightness=$(get_current_brightness)
       brightness_percentage=$(get_brightness_percentage $current_brightness $max_brightness)
       # Send a notification with the current brightness
-      dunstify -a "changeBrightness" -i computer-laptop -h int:value:"$brightness_percentage" "Current Brightness: ${brightness_percentage}%"
+      dunstify -a "changeBrightness" -i computer-laptop -h int:value:"$brightness_percentage" "Brightness: ${brightness_percentage}%"
     fi
     ;;
   down)
@@ -41,7 +41,7 @@ case "$1" in
     max_brightness=$(get_max_brightness)
     brightness_percentage=$(get_brightness_percentage $current_brightness $max_brightness)
     # Send a notification with the current brightness
-    dunstify -a "changeBrightness" -i computer-laptop -h int:value:"$brightness_percentage" "Current Brightness: ${brightness_percentage}%"
+    dunstify -a "changeBrightness" -i computer-laptop -h int:value:"$brightness_percentage" "Brightness: ${brightness_percentage}%"
     ;;
   *)
     echo "Usage: $0 {up|down}"
