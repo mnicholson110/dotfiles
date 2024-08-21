@@ -8,3 +8,4 @@ alias tt="tt -showwpm"
 source $ZSH/oh-my-zsh.sh
 source $HOME/.cargo/env
 alias ls="ls --color=tty"
+export GOPATH="$HOME/.go"

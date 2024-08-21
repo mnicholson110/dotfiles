@@ -6,7 +6,7 @@ return {
     config = function()
         require("mason").setup()
         require("mason-lspconfig").setup({
-            ensure_installed = { "rust_analyzer", "pylsp", "gopls", "lua_ls", "jdtls" },
+            ensure_installed = { "clangd", "rust_analyzer", "pylsp", "gopls", "lua_ls", "jdtls" },
         })
         require("mason-lspconfig").setup_handlers {
             function(server_name)

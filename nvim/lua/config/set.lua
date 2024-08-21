@@ -17,3 +17,8 @@ vim.keymap.set("n", "<leader>h", builtin.find_files, {})
 vim.keymap.set("n", "<leader>j", builtin.live_grep, {})
 vim.keymap.set("n", "<leader>k", builtin.buffers, {})
 vim.keymap.set("n", "<leader>l", builtin.help_tags, {})
+
+--Macros
+
+--Indent current line by 1 tab, then move to next line
+vim.fn.setreg('t', '^i	j')
