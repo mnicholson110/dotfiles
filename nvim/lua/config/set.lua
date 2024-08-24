@@ -11,6 +11,9 @@ vim.keymap.set("n", "<C-h>", ":wincmd h<CR>")
 vim.keymap.set("n", "<C-l>", ":wincmd l<CR>")
 vim.keymap.set("n", "<C-Return>", ":vsplit<CR>")
 
+--DB keymaps
+vim.keymap.set('n', '<leader>e', '<Plug>(DBUI_ExecuteQuery)', { noremap = true, silent = true })
+vim.keymap.set('n', '<leader>db', ':DBUI<CR>', { noremap = true, silent = true })
 
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>h", builtin.find_files, {})
