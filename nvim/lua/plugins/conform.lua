@@ -2,7 +2,7 @@ return {
     "stevearc/conform.nvim",
     opts = {
         formatters_by_ft = {
-            java = { "google-java-format" },
+            java = { "clang-format" },
             go = { "gofumpt", "golines", "goimports" },
             c = { "clang-format" },
             zig = { "zls" },

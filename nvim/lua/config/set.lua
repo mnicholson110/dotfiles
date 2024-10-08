@@ -1,5 +1,7 @@
 vim.keymap.set("n", "<leader>pv", vim.cmd.Oil)
 vim.keymap.set("t", "<leader>pv", vim.cmd.Oil)
+vim.keymap.set("n", "<leader>a", vim.cmd.Oil)
+vim.keymap.set("t", "<leader>a", vim.cmd.Oil)
 vim.keymap.set("v", "<C-j>", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "<C-k>", ":m '<-2<CR>gv=gv")
 vim.keymap.set("n", "<C-d>", "<C-d>zz")
@@ -20,6 +22,11 @@ vim.keymap.set("n", "<leader>h", builtin.find_files, {})
 vim.keymap.set("n", "<leader>j", builtin.live_grep, {})
 vim.keymap.set("n", "<leader>k", builtin.buffers, {})
 vim.keymap.set("n", "<leader>l", builtin.help_tags, {})
+
+vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+    pattern = "*.h",
+    command = "set filetype=c"
+})
 
 --Macros
 
