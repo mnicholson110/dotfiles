@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 { to | from }"
+  exit 1
+fi
+
+LOCAL_PATH="/home/matt/.steam/steam/steamapps/common/Sonic Adventure 2/resource/gd_PC/SAVEDATA"
+REMOTE_PATH="deck@steamdeck:/home/deck/.steam/steam/steamapps/common/Sonic Adventure 2/resource/gd_PC/SAVEDATA"
+
+case "$1" in
+  to)
+    scp "$LOCAL_PATH/SONIC2B__S01" "$REMOTE_PATH/SONIC2B__S01"
+    scp "$LOCAL_PATH/SONIC2B__ALF" "$REMOTE_PATH/SONIC2B__ALF"
+    ;;
+  from)
+    scp "$REMOTE_PATH/SONIC2B__S01" "$LOCAL_PATH/SONIC2B__S01"
+    scp "$REMOTE_PATH/SONIC2B__ALF" "$LOCAL_PATH/SONIC2B__ALF"
+    ;;
+  *)
+    echo "Invalid argument: $1. Use 'to' or 'from'."
+    exit 1
+    ;;
+esac
+
+echo "Transfer complete."
