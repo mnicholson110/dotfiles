@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 { to | from }"
+  exit 1
+fi
+
+LOCAL_PATH="/home/matt/.config/PCSX2/memcards"
+REMOTE_PATH="deck@steamdeck:/run/media/SD128/Emulation/saves/pcsx2/saves"
+
+case "$1" in
+  to)
+    scp "$LOCAL_PATH/Mcd001.ps2" "$REMOTE_PATH/Mcd001.ps2"
+    scp "$LOCAL_PATH/Mcd002.ps2" "$REMOTE_PATH/Mcd002.ps2"
+    ;;
+  from)
+    mv "$LOCAL_PATH/Mcd001.ps2" "$LOCAL_PATH/Mcd001.BACKUP"
+    mv "$LOCAL_PATH/Mcd002.ps2" "$LOCAL_PATH/Mcd002.BACKUP"
+    scp "$REMOTE_PATH/Mcd001.ps2" "$LOCAL_PATH/Mcd001.ps2"
+    scp "$REMOTE_PATH/Mcd002.ps2" "$LOCAL_PATH/Mcd002.ps2"
+    ;;
+  *)
+    echo "Invalid argument: $1. Use 'to' or 'from'."
+    exit 1
+    ;;
+esac
+
+echo "Transfer complete."
