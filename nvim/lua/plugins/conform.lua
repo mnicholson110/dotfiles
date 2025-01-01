@@ -6,6 +6,11 @@ return {
             go = { "gofumpt", "golines", "goimports" },
             c = { "clang-format" },
             zig = { "zls" },
+            javascript = { "prettier" },
+            json = { "prettier" },
+            html = { "prettier" },
+            css = { "prettier" },
+            javascriptreact = { "prettier" }
         },
         formatters = {
             clang_format = {
