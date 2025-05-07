@@ -9,4 +9,5 @@ source $ZSH/oh-my-zsh.sh
 source $HOME/.cargo/env
 alias ls="ls --color=tty"
 alias compose="docker-compose"
+alias lsg="ls | grep"
 export GOPATH="$HOME/.go"
