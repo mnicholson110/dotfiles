@@ -1,0 +1,9 @@
+#!/bin/bash
+
+BAT_PATH=$(find /sys/class/power_supply/ -name 'ps-controller-battery*' 2>/dev/null | head -n1)
+if [ -n "$BAT_PATH" ]; then
+    CAPACITY=$(cat "$BAT_PATH/capacity")
+    echo "{\"text\": \"$CAPACITY%\", \"tooltip\": \"PS Controller Battery\", \"class\": \"ps-controller\"}"
+else
+    echo "{\"text\": \"\", \"tooltip\": \"Controller not connected\", \"class\": \"ps-controller\"}"
+fi

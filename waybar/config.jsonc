@@ -1,8 +1,16 @@
 {
 	"layer": "top",
-	"modules-left": ["tray"], 
+	"modules-left": ["tray","custom/controller-battery"], 
 	"modules-center": ["hyprland/window"],
 	"modules-right": ["clock"],
+
+    "custom/controller-battery": {
+        "exec": "~/.dotfiles/scripts/controller_bat",
+        "interval": 10,
+        "hide-empty-text": true,
+        "return-type": "json",
+        "format": "PS4: {}"
+    },
 
     "clock": {
         "format": "{:%Y-%m-%d %I:%M %p}",
