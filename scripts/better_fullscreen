@@ -1,0 +1,7 @@
+#!/bin/sh
+title=$(hyprctl -j activewindow | jq -r .title)
+if printf '%s\n' "$title" | grep -Eiq ' - You[Tt]ube - (Google Chrome|Chromium)$'; then
+  hyprctl dispatch fullscreenstate 0 2
+else
+  hyprctl dispatch fullscreen 0
+fi

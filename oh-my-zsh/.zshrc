@@ -6,8 +6,14 @@ ZSH_THEME="mnich"
 plugins=(git)
 alias tt="tt -showwpm"
 source $ZSH/oh-my-zsh.sh
-source $HOME/.cargo/env
+source $HOME/.kube/completion
 alias ls="ls --color=tty"
 alias compose="docker-compose"
 alias lsg="ls | grep"
 export GOPATH="$HOME/.go"
+export OPENAI_API_KEY=$(cat $HOME/OPENAI_API_KEY)
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/matt/.lmstudio/bin"
+# End of LM Studio CLI section
+
