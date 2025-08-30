@@ -23,11 +23,18 @@ vim.keymap.set("n", "<leader>j", builtin.live_grep, {})
 vim.keymap.set("n", "<leader>k", builtin.buffers, {})
 vim.keymap.set("n", "<leader>l", builtin.help_tags, {})
 
-vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
-    pattern = "*.h",
-    command = "set filetype=c"
+vim.filetype.add({
+    extension = {
+        h = "c",
+    },
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "oil",
+    callback = function()
+        vim.keymap.set("n", "<leader>.", require("oil").toggle_hidden, { buffer = true, desc = "Toggle hidden files" })
+    end,
+})
 --Macros
 
 --Indent current line by 1 tab, then move to next line
