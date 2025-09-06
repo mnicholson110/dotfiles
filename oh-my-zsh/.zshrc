@@ -11,7 +11,6 @@ alias ls="ls --color=tty"
 alias compose="docker-compose"
 alias lsg="ls | grep"
 export GOPATH="$HOME/.go"
-export OPENAI_API_KEY=$(cat $HOME/OPENAI_API_KEY)
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:/home/matt/.lmstudio/bin"
