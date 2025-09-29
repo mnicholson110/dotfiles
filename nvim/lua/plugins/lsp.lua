@@ -11,10 +11,5 @@ return {
                 exclude = { "clangd" }
             }
         })
-        require("lspconfig").clangd.setup {
-            init_options = {
-                fallbackFlags = { '--std=c23' }
-            },
-        }
     end,
 }
