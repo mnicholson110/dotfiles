@@ -1,7 +1,5 @@
 vim.keymap.set("n", "<leader>pv", vim.cmd.Oil)
-vim.keymap.set("t", "<leader>pv", vim.cmd.Oil)
 vim.keymap.set("n", "<leader>a", vim.cmd.Oil)
-vim.keymap.set("t", "<leader>a", vim.cmd.Oil)
 vim.keymap.set("v", "<C-j>", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "<C-k>", ":m '<-2<CR>gv=gv")
 vim.keymap.set("n", "<C-d>", "<C-d>zz")
