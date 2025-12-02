@@ -9,7 +9,7 @@
         "interval": 10,
         "hide-empty-text": true,
         "return-type": "json",
-        "format": "PS4: {}"
+        "format": "PS5: {}"
     },
 
     "clock": {

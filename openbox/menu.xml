@@ -19,21 +19,11 @@
       <command>kitty</command>
     </action>
   </item>
-  <item label="VS Code">
+  <item label="Reaper">
     <action name="Execute">
-      <command>code</command>
+      <command>reaper</command>
     </action>
   </item>
-  <item label="Thunar">
-    <action name="Execute">
-      <command>thunar</command>
-    </action>
-  </item>
-  <!--  <item label="Unreal Engine">
-    <action name="Execute">
-    <command>/home/matt/.unreal/Engine/Binaries/Linux/UnrealEditor</command>
-    </action>
-    </item>-->
   <separator />
   <item label="OBConf">
     <action name="Execute">
