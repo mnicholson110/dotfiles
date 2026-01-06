@@ -15,4 +15,3 @@ map ctrl+v paste_from_clipboard
 
 tab_bar_edge top
 tab_bar_style powerline
-map shift+enter send_text all \e\r
