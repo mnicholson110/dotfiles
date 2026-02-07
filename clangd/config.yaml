@@ -1,0 +1,20 @@
+If:
+  PathMatch: .*
+CompileFlags:
+  Add: 
+    - -isystem
+    - -I/opt/homebrew/include
+
+---
+If:
+  PathMatch: '.*\.c$'
+CompileFlags:
+  Add: [-xc, -std=c11]
+  Remove: [-std=c++*, -stdlib=*]
+
+---
+If:
+  PathMatch: '.*\.h$'
+CompileFlags:
+  Add: [-xc-header, -std=c11]
+  Remove: [-std=c++*, -stdlib=*]
