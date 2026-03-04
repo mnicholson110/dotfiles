@@ -5,6 +5,7 @@ vim.keymap.set("v", "<C-k>", ":m '<-2<CR>gv=gv")
 vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-u>", "<C-u>zz")
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>")
+vim.keymap.set("n", "<leader>t", ":term<CR>")
 
 --DB keymaps
 vim.keymap.set('n', '<leader>e', '<Plug>(DBUI_ExecuteQuery)', { noremap = true, silent = true })
