@@ -7,9 +7,6 @@ return {
         require("mason").setup()
         require("mason-lspconfig").setup({
             ensure_installed = { "clangd", "rust_analyzer", "pylsp", "gopls", "lua_ls", "jdtls" },
-            automatic_enable = {
-                exclude = { "clangd" }
-            }
         })
     end,
 }

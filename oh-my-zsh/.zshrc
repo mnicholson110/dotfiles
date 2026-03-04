@@ -10,9 +10,7 @@ source $HOME/.kube/completion
 alias ls="ls --color=tty"
 alias compose="docker-compose"
 alias lsg="ls | grep"
+alias gfp="git fetch && git pull"
 export GOPATH="$HOME/.go"
 
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/matt/.lmstudio/bin"
-# End of LM Studio CLI section
 
