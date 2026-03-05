@@ -1,4 +1,3 @@
-vim.keymap.set("n", "<leader>pv", vim.cmd.Oil)
 vim.keymap.set("n", "<leader>a", vim.cmd.Oil)
 vim.keymap.set("v", "<C-j>", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "<C-k>", ":m '<-2<CR>gv=gv")
@@ -6,10 +5,11 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz")
 vim.keymap.set("n", "<C-u>", "<C-u>zz")
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>")
 vim.keymap.set("n", "<leader>t", ":term<CR>")
+vim.keymap.set("n", "<C-up>", "<C-w>+")
+vim.keymap.set("n", "<C-down>", "<C-w>-")
+vim.keymap.set("n", "<C-left>", "<C-w><")
+vim.keymap.set("n", "<C-right>", "<C-w>>")
 
---DB keymaps
-vim.keymap.set('n', '<leader>e', '<Plug>(DBUI_ExecuteQuery)', { noremap = true, silent = true })
-vim.keymap.set('n', '<leader>db', ':DBUI<CR>', { noremap = true, silent = true })
 
 local builtin = require("telescope.builtin")
 vim.keymap.set("n", "<leader>h", builtin.find_files, {})
@@ -29,6 +29,7 @@ vim.api.nvim_create_autocmd("FileType", {
         vim.keymap.set("n", "<leader>.", require("oil").toggle_hidden, { buffer = true, desc = "Toggle hidden files" })
     end,
 })
+
 --Macros
 
 --Indent current line by 1 tab, then move to next line
