@@ -1,4 +1,4 @@
-export PATH="$HOME/.dotfiles/scripts/:$HOME/.local/bin/:/usr/lib/jvm/java-22-openjdk/bin/:$PATH"
+export PATH="$HOME/.dotfiles/scripts/:$HOME/.local/bin/:$HOME/.go/bin:/usr/lib/jvm/java-22-openjdk/bin/:$PATH"
 
 export ZSH="$HOME/.oh-my-zsh"
 export ZSH_CUSTOM="$HOME/.dotfiles/oh-my-zsh"
@@ -12,5 +12,4 @@ alias compose="docker-compose"
 alias lsg="ls | grep"
 alias gfp="git fetch && git pull"
 export GOPATH="$HOME/.go"
-
 
