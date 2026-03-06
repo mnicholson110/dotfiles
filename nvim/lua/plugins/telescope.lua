@@ -21,6 +21,9 @@ return {
                 hidden = true,
                 find_command = { "rg", "--files", "--hidden", "--follow", "--glob", "!.git/*" },
             },
+            buffers = {
+                initial_mode = "normal",
+            }
         },
     }
 }
