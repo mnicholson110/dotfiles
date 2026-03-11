@@ -9,6 +9,7 @@ vim.keymap.set("n", "<C-up>", "<C-w>+")
 vim.keymap.set("n", "<C-down>", "<C-w>-")
 vim.keymap.set("n", "<C-left>", "<C-w><")
 vim.keymap.set("n", "<C-right>", "<C-w>>")
+vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float)
 
 
 local builtin = require("telescope.builtin")

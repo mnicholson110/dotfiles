@@ -1,5 +1,6 @@
-# Comment
 setopt PROMPT_SUBST
+autoload -U colors && colors
+
 NEWLINE=$'\n'
-RPROMPT='%{$fg[yellow]%}[$(hostnamectl hostname)]%{$reset_color%}'
-PROMPT='%{$fg[yellow]%}[%D{%I:%M}][%~] $(git_prompt_info) ${NEWLINE}> %{$reset_color%}'
+RPROMPT='%F{190}[$(hostname)]%f'
+PROMPT='%F{190}[%D{%I:%M}][%~] $(git_prompt_info)'"${NEWLINE}"'> %f'
