@@ -1,6 +1,6 @@
 {
 	"layer": "top",
-	"modules-left": ["tray","custom/controller-battery"], 
+	"modules-left": ["tray", "custom/controller-battery", "custom/glove80-battery"],
 	"modules-center": ["hyprland/window"],
 	"modules-right": ["clock"],
 
@@ -10,6 +10,14 @@
         "hide-empty-text": true,
         "return-type": "json",
         "format": "PS5: {}"
+    },
+
+    "custom/glove80-battery": {
+        "exec": "~/.dotfiles/scripts/glove80_bat",
+        "interval": 10,
+        "hide-empty-text": true,
+        "return-type": "json",
+        "format": "Glove80: {}"
     },
 
     "clock": {

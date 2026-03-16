@@ -1,0 +1,72 @@
+#!/bin/bash
+
+EMPTY_OUTPUT='{"text": "", "tooltip": "Glove80 not connected", "class": "glove80"}'
+GLOVE80_MODALIAS="bluetooth:v16C0p27DBd0001"
+
+emit_empty() {
+    printf '%s\n' "$EMPTY_OUTPUT"
+}
+
+get_prop() {
+    local path="$1"
+    local interface="$2"
+    local property="$3"
+
+    busctl --system get-property org.bluez "$path" "$interface" "$property" 2>/dev/null
+}
+
+extract_string() {
+    sed -n 's/^s "\(.*\)"$/\1/p'
+}
+
+extract_bool() {
+    sed -n 's/^b \(true\|false\)$/\1/p'
+}
+
+extract_byte() {
+    sed -n 's/^y \([0-9][0-9]*\)$/\1/p'
+}
+
+find_glove80_path() {
+    local path alias modalias
+
+    while IFS= read -r path; do
+        alias=$(get_prop "$path" org.bluez.Device1 Alias | extract_string)
+        modalias=$(get_prop "$path" org.bluez.Device1 Modalias | extract_string)
+
+        if [ "$modalias" = "$GLOVE80_MODALIAS" ] || [ "$alias" = "Glove80" ]; then
+            printf '%s\n' "$path"
+            return 0
+        fi
+    done < <(
+        busctl --system tree org.bluez 2>/dev/null |
+            sed -n 's|.*\(/org/bluez/hci[0-9]\+/dev_[A-F0-9_]\+\)$|\1|p'
+    )
+
+    return 1
+}
+
+if ! command -v busctl >/dev/null 2>&1; then
+    emit_empty
+    exit 0
+fi
+
+DEVICE_PATH=$(find_glove80_path)
+if [ -z "$DEVICE_PATH" ]; then
+    emit_empty
+    exit 0
+fi
+
+CONNECTED=$(get_prop "$DEVICE_PATH" org.bluez.Device1 Connected | extract_bool)
+if [ "$CONNECTED" != "true" ]; then
+    emit_empty
+    exit 0
+fi
+
+PERCENTAGE=$(get_prop "$DEVICE_PATH" org.bluez.Battery1 Percentage | extract_byte)
+if [ -z "$PERCENTAGE" ]; then
+    emit_empty
+    exit 0
+fi
+
+printf '{"text": "%s%%", "tooltip": "Glove80 Battery", "class": "glove80"}\n' "$PERCENTAGE"

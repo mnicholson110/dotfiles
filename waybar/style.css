@@ -20,6 +20,7 @@ window#waybar.empty #window {
 #tray,
 #clock,
 #custom-controller-battery,
+#custom-glove80-battery,
 #window {
   padding: 0px 2px;
   color: #ffffff;
