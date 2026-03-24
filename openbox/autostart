@@ -15,11 +15,11 @@
 # If you want to use XFCE config tools...
 #
 #xfce-mcs-manager &
-xinput set-prop 10 301 1 &
-nitrogen --restore &
+#xinput set-prop 10 301 1 &
+#nitrogen --restore &
 tint2 &
 steam -silent &
 blueman-applet &
-discord --start-minimized &
+#discord --start-minimized &
 volumeicon &
 ./.screenlayout/layout.sh &
