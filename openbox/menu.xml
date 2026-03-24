@@ -27,7 +27,7 @@
   <separator />
   <item label="OBConf">
     <action name="Execute">
-      <command>obconf</command>
+      <command>obconf-qt</command>
       <startupnotify><enabled>yes</enabled></startupnotify>
     </action>
   </item>
