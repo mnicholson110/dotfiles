@@ -1,16 +1,20 @@
 return {
     "nvim-treesitter/nvim-treesitter",
-    build = function()
-        require("nvim-treesitter.install").update({ with_sync = true })()
-    end,
+    build = ":TSUpdate",
     config = function()
-        local configs = require("nvim-treesitter.configs")
-        configs.setup({
-            ensure_installed = { "c", "java", "lua", "vim", "vimdoc", "go" },
-            sync_install = true,
-            auto_install = true,
-            highlight = { enable = true },
-            indent = { enable = true },
+        local treesitter = require("nvim-treesitter")
+        local languages = { "c", "java", "lua", "vim", "vimdoc", "go" }
+
+        treesitter.setup()
+
+        vim.api.nvim_create_autocmd("FileType", {
+            pattern = languages,
+            callback = function(args)
+                vim.treesitter.start(args.buf)
+                vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                vim.wo[vim.api.nvim_get_current_win()].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+                vim.wo[vim.api.nvim_get_current_win()].foldmethod = "expr"
+            end,
         })
-    end
+    end,
 }
