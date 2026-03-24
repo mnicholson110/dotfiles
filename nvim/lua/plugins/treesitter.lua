@@ -7,6 +7,24 @@ return {
 
         treesitter.setup()
 
+        local installed = {}
+        for _, lang in ipairs(treesitter.get_installed("parsers")) do
+            installed[lang] = true
+        end
+
+        local missing = {}
+        for _, lang in ipairs(languages) do
+            if not installed[lang] then
+                table.insert(missing, lang)
+            end
+        end
+
+        if #missing > 0 then
+            vim.schedule(function()
+                treesitter.install(missing, { summary = true })
+            end)
+        end
+
         vim.api.nvim_create_autocmd("FileType", {
             pattern = languages,
             callback = function(args)
