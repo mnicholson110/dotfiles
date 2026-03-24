@@ -20,6 +20,6 @@
 tint2 &
 steam -silent &
 blueman-applet &
+dunst &
 #discord --start-minimized &
-volumeicon &
-./.screenlayout/layout.sh &
+/home/matt/.screenlayout/layout.sh &

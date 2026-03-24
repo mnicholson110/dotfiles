@@ -1,15 +1,15 @@
 # Background settings
 # Background 1: Panel
-rounded = 6
-border_width = 0
-background_color = #000000 0
-border_color = #000000 0
+rounded = 12
+border_width = 1
+background_color = #d3d7dc 85
+border_color = #b8bec5 100
 
 # Panel
 panel_items = STC
-panel_size = 100% 30
-panel_margin = 0 0
-panel_padding = 0 0 0
+panel_size = 98% 34
+panel_margin = 8 8
+panel_padding = 10 0 10
 panel_background_id = 1
 wm_menu = 1
 panel_dock = 0

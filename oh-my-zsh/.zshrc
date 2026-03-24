@@ -6,7 +6,6 @@ ZSH_THEME="mnich"
 plugins=(git)
 alias tt="tt -showwpm"
 source $ZSH/oh-my-zsh.sh
-source $HOME/.kube/completion
 alias ls="ls --color=tty"
 alias compose="docker-compose"
 alias lsg="ls | grep"
