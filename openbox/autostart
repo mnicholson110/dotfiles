@@ -10,4 +10,4 @@ polybar main &
 dunst &
 blueman-applet &
 steam -silent &
-#discord --start-minimized &
+discord --start-minimized &
