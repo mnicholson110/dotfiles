@@ -21,6 +21,12 @@ return {
                 name = "rust_analyzer",
                 bin = "rust-analyzer",
             },
+            {
+                name = "qmlls",
+                bin = "qmlls",
+                filetypes = { "qml", "qmljs" },
+                root_markers = { "qmldir", ".git" },
+            },
         }
 
         for _, server in ipairs(servers) do
@@ -31,6 +37,14 @@ return {
 
                 if server.settings then
                     config.settings = server.settings
+                end
+
+                if server.filetypes then
+                    config.filetypes = server.filetypes
+                end
+
+                if server.root_markers then
+                    config.root_markers = server.root_markers
                 end
 
                 vim.lsp.config(server.name, config)

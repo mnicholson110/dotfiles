@@ -3,9 +3,11 @@ return {
     build = ":TSUpdate",
     config = function()
         local treesitter = require("nvim-treesitter")
-        local languages = { "c", "java", "lua", "vim", "vimdoc", "go" }
+        local languages = { "c", "java", "lua", "vim", "vimdoc", "go", "qmljs" }
+        local filetypes = { "c", "java", "lua", "vim", "vimdoc", "go", "qml", "qmljs" }
 
         treesitter.setup()
+        vim.treesitter.language.register("qmljs", "qml")
 
         local installed = {}
         for _, lang in ipairs(treesitter.get_installed("parsers")) do
@@ -26,7 +28,7 @@ return {
         end
 
         vim.api.nvim_create_autocmd("FileType", {
-            pattern = languages,
+            pattern = filetypes,
             callback = function(args)
                 vim.treesitter.start(args.buf)
                 vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"

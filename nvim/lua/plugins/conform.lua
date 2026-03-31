@@ -11,7 +11,9 @@ return {
             html = { "prettier" },
             css = { "prettier" },
             javascriptreact = { "prettier" },
-            terraform = { "tfmt" }
+            terraform = { "tfmt" },
+            qml = { "qmlformat" },
+            qmljs = { "qmlformat" },
         },
         formatters = {
             clang_format = {
