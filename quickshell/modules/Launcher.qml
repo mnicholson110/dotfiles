@@ -35,7 +35,13 @@ PanelWindow {
 
     readonly property var visibleApps: {
         const apps = DesktopEntries.applications.values.filter(app => !shell.isHiddenApp(app));
-        apps.sort((a, b) => (a.name || a.id || "").localeCompare(b.name || b.id || ""));
+        apps.sort((a, b) => {
+            const rankDelta = shell.launcherMruRank(a) - shell.launcherMruRank(b);
+            if (rankDelta !== 0)
+                return rankDelta;
+
+            return (a.name || a.id || "").localeCompare(b.name || b.id || "");
+        });
         return apps;
     }
 
@@ -196,7 +202,7 @@ PanelWindow {
                     required property DesktopEntry modelData
                     required property int index
 
-                    height: 72
+                    height: 60
                     width: ListView.view.width
                     radius: theme.radius
                     color: ListView.isCurrentItem ? Qt.alpha(theme.primaryContainer, 0.7) : Qt.alpha(theme.surfaceRaised, 0.88)

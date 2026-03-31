@@ -11,16 +11,58 @@ ShellRoot {
     property bool sessionOpen: false
     property string barMenu: ""
     property var activeTrayItem: null
-    property int barHeight: 52
-    property int barReserve: 52
+    property int barHeight: 36
+    property int barReserve: 36
     property real centerPillWidthRatio: 0.28
     property string pendingOverlay: ""
     property string terminal: "kitty"
+    property list<string> launcherMruIds: []
+    property int launcherMruLimit: 64
     property list<string> launcherAllowedApps: [
         "com.google.Chrome.desktop",
         "google-chrome.desktop",
         "discord.desktop"
     ]
+
+    function launcherEntryKey(entry: DesktopEntry): string {
+        if (!entry)
+            return "";
+
+        return entry.id || entry.desktopFile || entry.name || "";
+    }
+
+    function applyLauncherMru(raw: string): void {
+        const seen = {};
+        const entries = [];
+
+        for (const line of raw.split(/\r?\n/)) {
+            const id = line.trim();
+            if (!id || seen[id])
+                continue;
+
+            seen[id] = true;
+            entries.push(id);
+        }
+
+        launcherMruIds = entries.slice(0, launcherMruLimit);
+    }
+
+    function rememberLauncherApp(entry: DesktopEntry): void {
+        const id = launcherEntryKey(entry);
+        if (!id)
+            return;
+
+        const nextIds = launcherMruIds.filter(existingId => existingId !== id);
+        nextIds.unshift(id);
+        launcherMruIds = nextIds.slice(0, launcherMruLimit);
+        launcherMruWriteProc.running = true;
+    }
+
+    function launcherMruRank(entry: DesktopEntry): int {
+        const id = launcherEntryKey(entry);
+        const index = id ? launcherMruIds.indexOf(id) : -1;
+        return index >= 0 ? index : launcherMruIds.length + 1;
+    }
 
     function hasCategory(entry: DesktopEntry, category: string): bool {
         if (!entry || !entry.categories)
@@ -146,6 +188,7 @@ ShellRoot {
         if (!entry)
             return;
 
+        rememberLauncherApp(entry);
         closeOverlays();
 
         if (entry.runInTerminal) {
@@ -192,6 +235,33 @@ ShellRoot {
             root.pendingOverlay = "";
         }
     }
+
+    Process {
+        id: launcherMruLoadProc
+
+        command: [
+            "sh",
+            "-lc",
+            "mkdir -p \"$HOME/.cache/quickshell\" && cat \"$HOME/.cache/quickshell/launcher-mru\" 2>/dev/null || true"
+        ]
+        stdout: StdioCollector {
+            onStreamFinished: root.applyLauncherMru(this.text)
+        }
+    }
+
+    Process {
+        id: launcherMruWriteProc
+
+        command: [
+            "sh",
+            "-lc",
+            "mkdir -p \"$HOME/.cache/quickshell\" && printf '%s\\n' \"$@\" > \"$HOME/.cache/quickshell/launcher-mru\"",
+            "launcher-mru",
+            ...root.launcherMruIds
+        ]
+    }
+
+    Component.onCompleted: launcherMruLoadProc.running = true
 
     Scope {
         IpcHandler {
