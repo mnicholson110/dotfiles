@@ -1,3 +1,4 @@
 nvim/plugin/packer_compiled.lua
 scripts/pi_login
 nvim/lazy-lock.json
+.codex
