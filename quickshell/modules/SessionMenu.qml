@@ -15,6 +15,7 @@ PanelWindow {
 
     required property QtObject shell
     property real revealHeight: 0
+    property var pendingAction: null
     readonly property int gridColumns: 2
     readonly property int gridSpacing: 14
     readonly property int panelWidth: Math.round(width * shell.centerPillWidthRatio)
@@ -28,7 +29,7 @@ PanelWindow {
     }
     margins.top: shell.barHeight - 1
 
-    visible: true
+    visible: shell.sessionOpen || root.revealHeight > 0
     color: "transparent"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
@@ -60,6 +61,12 @@ PanelWindow {
 
     function runAction(action): void {
         shell.closeOverlays();
+        if (action && action.id === "lock") {
+            pendingAction = action;
+            actionTimer.restart();
+            return;
+        }
+
         shell.runShell(action.command);
     }
 
@@ -128,6 +135,21 @@ PanelWindow {
         onTriggered: {
             if (shell.sessionOpen && firstButton)
                 firstButton.forceActiveFocus();
+        }
+    }
+
+    Timer {
+        id: actionTimer
+
+        interval: 160
+        repeat: false
+        onTriggered: {
+            if (!root.pendingAction)
+                return;
+
+            const action = root.pendingAction;
+            root.pendingAction = null;
+            shell.runShell(action.command);
         }
     }
 

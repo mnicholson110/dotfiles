@@ -26,26 +26,22 @@ PanelWindow {
     implicitHeight: shell.barHeight
     exclusiveZone: shell.barReserve
 
-    property string activeWindowTitle: "Desktop"
+    property var hyprland: Hyprland
     property date now: new Date()
-    readonly property string clockText: Qt.formatDateTime(now, "yyyy-MM-dd hh:mm AP")
+    readonly property string activeWindowTitle: {
+        const focusedWorkspace = root.hyprland ? root.hyprland.focusedWorkspace : null;
+        const workspaceState = focusedWorkspace && focusedWorkspace.lastIpcObject ? focusedWorkspace.lastIpcObject : null;
+        const workspaceWindowCount = workspaceState ? Number(workspaceState.windows || 0) : 0;
+        if (workspaceWindowCount === 0)
+            return "Desktop";
 
-    function syncActiveWindowTitle(): void {
-        const focusedWorkspace = Hyprland.focusedWorkspace;
-        const workspaceWindowCount = focusedWorkspace ? Number(focusedWorkspace.lastIpcObject.windows || 0) : 0;
-        if (workspaceWindowCount === 0) {
-            activeWindowTitle = "Desktop";
-            return;
-        }
+        const activeToplevel = root.hyprland ? root.hyprland.activeToplevel : null;
+        if (!activeToplevel || !activeToplevel.activated)
+            return "Desktop";
 
-        const activeToplevel = Hyprland.activeToplevel;
-        if (!activeToplevel || !activeToplevel.activated) {
-            activeWindowTitle = "Desktop";
-            return;
-        }
-
-        activeWindowTitle = activeToplevel.title || "Desktop";
+        return activeToplevel.title || "Desktop";
     }
+    readonly property string clockText: Qt.formatDateTime(now, "yyyy-MM-dd hh:mm AP")
 
     function trayIconSource(icon: string): url {
         if (!icon)
@@ -86,88 +82,6 @@ PanelWindow {
         running: true
         onTriggered: root.now = new Date()
     }
-
-    Timer {
-        id: activeWindowTitleSyncTimer
-
-        interval: 16
-        repeat: false
-        onTriggered: root.syncActiveWindowTitle()
-    }
-
-    Connections {
-        target: Hyprland
-
-        function onFocusedWorkspaceChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-
-        function onActiveToplevelChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-
-        function onRawEvent(event): void {
-            const refreshEventNames = [
-                "activewindow",
-                "activewindowv2",
-                "closewindow",
-                "openwindow",
-                "movewindow",
-                "movewindowv2",
-                "workspace",
-                "workspacev2",
-                "focusedmon",
-                "focusedmonv2"
-            ];
-
-            if (refreshEventNames.indexOf(event.name) === -1)
-                return;
-
-            Hyprland.refreshWorkspaces();
-            Hyprland.refreshToplevels();
-            activeWindowTitleSyncTimer.restart();
-        }
-    }
-
-    Connections {
-        target: Hyprland.activeToplevel
-        ignoreUnknownSignals: true
-
-        function onTitleChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-
-        function onActivatedChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-
-        function onWorkspaceChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-
-        function onLastIpcObjectChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-    }
-
-    Connections {
-        target: Hyprland.focusedWorkspace
-        ignoreUnknownSignals: true
-
-        function onLastIpcObjectChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-
-        function onFocusedChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-
-        function onActiveChanged(): void {
-            activeWindowTitleSyncTimer.restart();
-        }
-    }
-
-    Component.onCompleted: activeWindowTitleSyncTimer.start()
 
     Item {
         id: controllerBattery

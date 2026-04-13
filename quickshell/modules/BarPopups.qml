@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Widgets
 import "../components" as Components
 
 PanelWindow {
@@ -73,8 +72,7 @@ PanelWindow {
         popupLoader.active = false;
         popupLoader.sourceComponent = component;
         popupLoader.active = !!component;
-
-        Qt.callLater(() => root.syncPopupHeight());
+        root.syncPopupHeight();
     }
 
     function syncPopupHeight(): void {
@@ -94,37 +92,6 @@ PanelWindow {
         }
     }
 
-    function menuIconSource(icon: string): url {
-        if (!icon)
-            return "";
-
-        if (icon.startsWith("image://") || icon.startsWith("file:") || icon.startsWith("/"))
-            return icon;
-
-        if (icon.includes("?"))
-            icon = icon.split("?")[0];
-
-        const aliases = {
-            "bluetooth-disabled-symbolic": "bluetooth",
-            "bluetooth-disconnected-symbolic": "bluetooth",
-            "bluetooth-symbolic": "bluetooth",
-            "application-exit-symbolic": "system-log-out",
-            "help-about-symbolic": "dialog-information",
-            "application-x-addon-symbolic": "applications-system",
-            "document-properties-symbolic": "preferences-system",
-            "document-open-recent-symbolic": "document-open-recent",
-            "edit-find-symbolic": "edit-find"
-        };
-
-        if (aliases[icon])
-            return Quickshell.iconPath(aliases[icon], "application-x-executable");
-
-        if (icon.endsWith("-symbolic"))
-            return Quickshell.iconPath(icon.slice(0, -9), "application-x-executable");
-
-        return Quickshell.iconPath(icon, "application-x-executable");
-    }
-
     anchors {
         top: true
         left: true
@@ -135,7 +102,7 @@ PanelWindow {
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
 
-    visible: true
+    visible: root.displayedMenu !== "" || root.pendingMenu !== "" || root.revealHeight > 0
     color: "transparent"
     implicitHeight: revealHeight
 
@@ -310,8 +277,7 @@ PanelWindow {
                 if (trayItem) {
                     stack.push(subMenuComponent.createObject(stack, {
                         handle: trayItem.menu,
-                        depthIndex: 0,
-                        showIcons: !(trayItem.id || "").toLowerCase().includes("blu")
+                        depthIndex: 0
                     }));
                 }
             }
@@ -333,7 +299,6 @@ PanelWindow {
 
                     required property QsMenuHandle handle
                     required property int depthIndex
-                    required property bool showIcons
 
                     implicitWidth: 236
                     implicitHeight: menuColumn.implicitHeight + (depthIndex > 0 ? backButton.implicitHeight + 8 : 0)
@@ -403,8 +368,7 @@ PanelWindow {
                                         if (menuItem.modelData.hasChildren) {
                                             stack.push(subMenuComponent.createObject(stack, {
                                                 handle: menuItem.modelData,
-                                                depthIndex: menuRoot.depthIndex + 1,
-                                                showIcons: menuRoot.showIcons
+                                                depthIndex: menuRoot.depthIndex + 1
                                             }));
                                         } else {
                                             menuItem.modelData.triggered();
@@ -419,18 +383,6 @@ PanelWindow {
                                     anchors.rightMargin: 10
                                     spacing: 8
                                     visible: !menuItem.modelData.isSeparator
-
-                                    Loader {
-                                        active: menuRoot.showIcons && !!menuItem.modelData.icon
-                                        Layout.preferredWidth: active ? 16 : 0
-                                        Layout.preferredHeight: active ? 16 : 0
-
-                                        sourceComponent: IconImage {
-                                            implicitSize: 16
-                                            asynchronous: true
-                                            source: root.menuIconSource(menuItem.modelData.icon)
-                                        }
-                                    }
 
                                     Text {
                                         text: menuItem.modelData.text

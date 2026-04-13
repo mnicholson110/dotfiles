@@ -209,7 +209,7 @@ PanelWindow {
     margins.right: 14
 
     color: "transparent"
-    visible: true
+    visible: root.visibleNotifications.length > 0
     implicitWidth: stackWidth
     implicitHeight: notificationColumn.implicitHeight
 

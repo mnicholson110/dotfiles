@@ -16,8 +16,8 @@ ShellRoot {
     property real centerPillWidthRatio: 0.28
     property string pendingOverlay: ""
     property string terminal: "kitty"
-    property list<string> launcherMruIds: []
-    property int launcherMruLimit: 64
+    property list<string> launcherHistoryIds: []
+    property int launcherHistoryLimit: 10
     property list<string> launcherAllowedApps: [
         "com.google.Chrome.desktop",
         "google-chrome.desktop",
@@ -31,20 +31,18 @@ ShellRoot {
         return entry.id || entry.desktopFile || entry.name || "";
     }
 
-    function applyLauncherMru(raw: string): void {
-        const seen = {};
+    function applyLauncherHistory(raw: string): void {
         const entries = [];
 
         for (const line of raw.split(/\r?\n/)) {
             const id = line.trim();
-            if (!id || seen[id])
+            if (!id)
                 continue;
 
-            seen[id] = true;
             entries.push(id);
         }
 
-        launcherMruIds = entries.slice(0, launcherMruLimit);
+        launcherHistoryIds = entries.slice(0, launcherHistoryLimit);
     }
 
     function rememberLauncherApp(entry: DesktopEntry): void {
@@ -52,16 +50,27 @@ ShellRoot {
         if (!id)
             return;
 
-        const nextIds = launcherMruIds.filter(existingId => existingId !== id);
-        nextIds.unshift(id);
-        launcherMruIds = nextIds.slice(0, launcherMruLimit);
-        launcherMruWriteProc.running = true;
+        launcherHistoryIds = [id, ...launcherHistoryIds].slice(0, launcherHistoryLimit);
+        launcherHistoryWriteProc.running = true;
     }
 
-    function launcherMruRank(entry: DesktopEntry): int {
+    function launcherHistoryWeight(entry: DesktopEntry): int {
         const id = launcherEntryKey(entry);
-        const index = id ? launcherMruIds.indexOf(id) : -1;
-        return index >= 0 ? index : launcherMruIds.length + 1;
+        if (!id)
+            return 0;
+
+        let weight = 0;
+        for (let index = 0; index < launcherHistoryIds.length; index++) {
+            if (launcherHistoryIds[index] === id)
+                weight += launcherHistoryIds.length - index;
+        }
+
+        return weight;
+    }
+
+    function launcherHistoryRecentIndex(entry: DesktopEntry): int {
+        const id = launcherEntryKey(entry);
+        return id ? launcherHistoryIds.indexOf(id) : -1;
     }
 
     function hasCategory(entry: DesktopEntry, category: string): bool {
@@ -237,31 +246,31 @@ ShellRoot {
     }
 
     Process {
-        id: launcherMruLoadProc
+        id: launcherHistoryLoadProc
 
         command: [
             "sh",
             "-lc",
-            "mkdir -p \"$HOME/.cache/quickshell\" && cat \"$HOME/.cache/quickshell/launcher-mru\" 2>/dev/null || true"
+            "mkdir -p \"$HOME/.cache/quickshell\" && cat \"$HOME/.cache/quickshell/launcher-history\" 2>/dev/null || cat \"$HOME/.cache/quickshell/launcher-mru\" 2>/dev/null || true"
         ]
         stdout: StdioCollector {
-            onStreamFinished: root.applyLauncherMru(this.text)
+            onStreamFinished: root.applyLauncherHistory(this.text)
         }
     }
 
     Process {
-        id: launcherMruWriteProc
+        id: launcherHistoryWriteProc
 
         command: [
             "sh",
             "-lc",
-            "mkdir -p \"$HOME/.cache/quickshell\" && printf '%s\\n' \"$@\" > \"$HOME/.cache/quickshell/launcher-mru\"",
-            "launcher-mru",
-            ...root.launcherMruIds
+            "mkdir -p \"$HOME/.cache/quickshell\" && printf '%s\\n' \"$@\" > \"$HOME/.cache/quickshell/launcher-history\"",
+            "launcher-history",
+            ...root.launcherHistoryIds
         ]
     }
 
-    Component.onCompleted: launcherMruLoadProc.running = true
+    Component.onCompleted: launcherHistoryLoadProc.running = true
 
     Scope {
         IpcHandler {

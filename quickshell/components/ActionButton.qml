@@ -4,10 +4,6 @@ import QtQuick.Controls
 Button {
     id: root
 
-    Theme {
-        id: theme
-    }
-
     property color bgColor: theme.surfaceRaised
     property color hoverColor: theme.surfaceStrong
     property color accentColor: theme.primaryContainer
@@ -15,21 +11,15 @@ Button {
 
     focusPolicy: Qt.StrongFocus
 
+    Theme {
+        id: theme
+    }
+
     background: Rectangle {
         radius: theme.radius
         color: root.down ? root.accentColor : (root.hovered ? root.hoverColor : root.bgColor)
         border.color: root.activeFocus ? theme.primaryStrong : root.borderColor
         border.width: 1
-
-        Rectangle {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: 1
-            height: Math.max(1, parent.height * 0.16)
-            radius: parent.radius
-            color: Qt.rgba(1, 1, 1, 0.05)
-        }
     }
 
     contentItem: Text {
@@ -44,4 +34,5 @@ Button {
         font.bold: true
         font.pixelSize: 17
     }
+
 }
