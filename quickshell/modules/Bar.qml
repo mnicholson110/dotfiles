@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
@@ -15,6 +14,7 @@ PanelWindow {
     }
 
     required property QtObject shell
+    screen: shell.panelScreen
 
     anchors {
         top: true
@@ -26,21 +26,7 @@ PanelWindow {
     implicitHeight: shell.barHeight
     exclusiveZone: shell.barReserve
 
-    property var hyprland: Hyprland
     property date now: new Date()
-    readonly property string activeWindowTitle: {
-        const focusedWorkspace = root.hyprland ? root.hyprland.focusedWorkspace : null;
-        const workspaceState = focusedWorkspace && focusedWorkspace.lastIpcObject ? focusedWorkspace.lastIpcObject : null;
-        const workspaceWindowCount = workspaceState ? Number(workspaceState.windows || 0) : 0;
-        if (workspaceWindowCount === 0)
-            return "Desktop";
-
-        const activeToplevel = root.hyprland ? root.hyprland.activeToplevel : null;
-        if (!activeToplevel || !activeToplevel.activated)
-            return "Desktop";
-
-        return activeToplevel.title || "Desktop";
-    }
     readonly property string clockText: Qt.formatDateTime(now, "yyyy-MM-dd hh:mm AP")
 
     function trayIconSource(icon: string): url {
@@ -211,37 +197,12 @@ PanelWindow {
             color: theme.surface
         }
 
-        Rectangle {
-            id: centerPlate
-
-            width: parent.width * shell.centerPillWidthRatio
-            height: parent.height - 10
-            anchors.centerIn: parent
-            radius: theme.radius
-            color: theme.surfaceRaised
-            border.color: theme.border
-            border.width: 1
-
-        }
-
-        Text {
-            anchors.centerIn: centerPlate
-            width: centerPlate.width - 28
-            text: root.activeWindowTitle
-            color: theme.text
-            elide: Text.ElideRight
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            font.family: "GoMono Nerd Font Mono"
-            font.bold: true
-            font.pixelSize: 15
-        }
-
         Item {
             anchors.left: parent.left
             anchors.leftMargin: 18
+            anchors.right: clockHitbox.left
+            anchors.rightMargin: 18
             anchors.verticalCenter: parent.verticalCenter
-            width: Math.max(0, centerPlate.x - 30)
             height: leftRow.implicitHeight
 
             RowLayout {

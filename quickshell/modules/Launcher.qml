@@ -15,6 +15,7 @@ PanelWindow {
     }
 
     required property QtObject shell
+    screen: shell.panelScreen
     property real revealHeight: 0
     property string searchText: ""
     readonly property int panelWidth: Math.round(width * shell.centerPillWidthRatio)

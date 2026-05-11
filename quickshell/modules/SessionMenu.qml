@@ -14,6 +14,7 @@ PanelWindow {
     }
 
     required property QtObject shell
+    screen: shell.panelScreen
     property real revealHeight: 0
     property var pendingAction: null
     readonly property int gridColumns: 2

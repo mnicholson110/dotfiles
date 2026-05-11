@@ -15,6 +15,7 @@ PanelWindow {
     }
 
     required property QtObject shell
+    screen: shell.panelScreen
 
     readonly property int stackWidth: 392
     readonly property int stackSpacing: 10

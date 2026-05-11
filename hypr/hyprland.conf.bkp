@@ -12,14 +12,14 @@
 
 
 # monitor=,preferred,auto,auto
-monitor = DP-2, 3840x2160@60, 0x-1440, 1.5
-monitor = DP-1, 2560x1440@144, 0x0, 1
+monitor = DP-1, 3840x2160@60, 0x-1440,  1.5
+monitor = DP-2, 2560x1440@144, 0x0, 1
 #monitor = HDMI-A-1, 1920x1080@60, 320x-1080, 1
 #monitor = HDMI-A-1, 1920x1080@60, 0x0, 1
 #monitor = HDMI-A-1, 4096x2160, 0x0, 2 
 
-workspace = 2,monitor:DP-2
-workspace = 1,monitor:DP-1
+workspace = 1,monitor:DP-2
+workspace = 2,monitor:DP-1
 
 # See https://wiki.hyprland.org/Configuring/Keywords/ for more
 
@@ -32,6 +32,30 @@ windowrule {
 
 windowrule = match:class google-chrome, sync_fullscreen 0
 
+# Wine/yabridge plugin windows: keep XWayland plugin UIs out of tiling,
+# centered, and able to receive input.
+windowrule {
+    name = reaper-float
+    match:class = .*(REAPER).*
+    float = on
+}
+
+windowrule {
+    name = wine-vst-float
+    match:class = .*(\.exe|yabridge-host\.exe\.so|wine|Wine).*
+    match:xwayland = true
+    float = on
+    center = on
+    allows_input = on
+    focus_on_activate = on
+    no_anim = on
+    no_blur = on
+    no_shadow = on
+    decorate = off
+    opaque = on
+    force_rgbx = on
+}
+
 # Execute your favorite apps at launch
 # exec-once = waybar & hyprpaper & firefox
 exec-once = hypridle 
@@ -42,12 +66,14 @@ exec-once = steam -silent
 exec-once = blueman-applet 
 exec-once = nm-applet 
 exec-once = discord --start-minimized 
+exec-once = hyprctl dispatch exec '[workspace 2 silent] google-chrome-stable --new-window --start-fullscreen --app=http://192.168.1.67:3337/'
 
 
 # Source a file (multi-file configs)
 # source = ~/.config/hypr/myColors.conf
 
 # Some default env vars.
+env = XCURSOR_THEME,Adwaita
 env = XCURSOR_SIZE,24
 env = XDG_SESSION_TYPE,wayland
 

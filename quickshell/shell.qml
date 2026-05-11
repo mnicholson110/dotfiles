@@ -14,6 +14,8 @@ ShellRoot {
     property int barHeight: 36
     property int barReserve: 36
     property real centerPillWidthRatio: 0.28
+    property string panelOutputName: "DP-2"
+    readonly property var panelScreen: screenByName(panelOutputName)
     property string pendingOverlay: ""
     property string terminal: "kitty"
     property list<string> launcherHistoryIds: []
@@ -21,8 +23,19 @@ ShellRoot {
     property list<string> launcherAllowedApps: [
         "com.google.Chrome.desktop",
         "google-chrome.desktop",
-        "discord.desktop"
+        "discord.desktop",
+        "cockos-reaper.desktop",
+        "cockos-reaper"
     ]
+
+    function screenByName(name: string): var {
+        for (const screen of Quickshell.screens) {
+            if (screen.name === name)
+                return screen;
+        }
+
+        return Quickshell.screens.length > 0 ? Quickshell.screens[0] : null;
+    }
 
     function launcherEntryKey(entry: DesktopEntry): string {
         if (!entry)
@@ -95,6 +108,9 @@ ShellRoot {
             return true;
 
         if (name === "google chrome" || startupClass === "google-chrome" || execString.includes("google-chrome"))
+            return true;
+
+        if (name === "reaper" || startupClass === "reaper" || execString.includes("reaper"))
             return true;
 
         return false;
