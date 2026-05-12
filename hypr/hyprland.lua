@@ -38,21 +38,52 @@ hl.window_rule({
 })
 
 hl.window_rule({
-  name = "reaper-float",
-  match = { class = ".*(REAPER).*" },
+  name = "reaper-query-dialog",
+  match = {
+    class = [[REAPER]],
+    title = [[REAPER Query]],
+    xwayland = true,
+  },
   float = true,
+  center = true,
+  min_size = { 420, 140 },
+  allows_input = true,
+  focus_on_activate = true,
+  no_initial_focus = false,
 })
 
 hl.window_rule({
   name = "wine-vst-float",
   match = {
-    class = [[.*(\.exe|yabridge-host\.exe\.so|wine|Wine).*]],
+    class = [[.*(wine|Wine).*]],
     xwayland = true,
   },
   float = true,
   center = true,
   allows_input = true,
   focus_on_activate = true,
+  no_anim = true,
+  no_blur = true,
+  no_shadow = true,
+  decorate = false,
+  opaque = true,
+  force_rgbx = true,
+})
+
+
+hl.window_rule({
+  name = "yabridge-menu-popups",
+  match = {
+    class = [[yabridge-host\.exe\.so]],
+    xwayland = true,
+  },
+  float = true,
+  allows_input = true,
+  fullscreen_state = "0 0",
+  stay_focused = true,
+  suppress_event = "fullscreen maximize fullscreenoutput",
+  focus_on_activate = true,
+  no_initial_focus = false,
   no_anim = true,
   no_blur = true,
   no_shadow = true,
@@ -194,7 +225,7 @@ hl.bind(
 
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.dotfiles/scripts/volume_control up"), { repeating = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.dotfiles/scripts/volume_control down"), { repeating = true })
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.dotfiles/scripts/volume_control mute"), { repeating = true })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.dotfiles/scripts/volume_control mute"), { repeating = false })
 
 hl.bind("SUPER + C", hl.dsp.send_shortcut({ mods = "CTRL", key = "C" }))
 hl.bind("SUPER + V", hl.dsp.send_shortcut({ mods = "CTRL", key = "V" }))
