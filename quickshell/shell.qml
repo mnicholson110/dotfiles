@@ -11,22 +11,17 @@ ShellRoot {
     property bool sessionOpen: false
     property string barMenu: ""
     property var activeTrayItem: null
-    property int barHeight: 36
-    property int barReserve: 36
-    property real centerPillWidthRatio: 0.28
+    property int barHeight: 42
+    property int barReserve: 42
     property string panelOutputName: "DP-2"
+    property string secondaryPanelOutputName: "DP-1"
     readonly property var panelScreen: screenByName(panelOutputName)
+    readonly property var secondaryPanelScreen: screenByName(secondaryPanelOutputName)
+    property var barPopupScreen: panelScreen
     property string pendingOverlay: ""
     property string terminal: "kitty"
     property list<string> launcherHistoryIds: []
     property int launcherHistoryLimit: 10
-    property list<string> launcherAllowedApps: [
-        "com.google.Chrome.desktop",
-        "google-chrome.desktop",
-        "discord.desktop",
-        "cockos-reaper.desktop",
-        "cockos-reaper"
-    ]
 
     function screenByName(name: string): var {
         for (const screen of Quickshell.screens) {
@@ -86,50 +81,24 @@ ShellRoot {
         return id ? launcherHistoryIds.indexOf(id) : -1;
     }
 
-    function hasCategory(entry: DesktopEntry, category: string): bool {
-        if (!entry || !entry.categories)
-            return false;
-
-        return entry.categories.indexOf(category) !== -1;
-    }
-
-    function isAllowedLauncherApp(entry: DesktopEntry): bool {
-        if (!entry)
-            return false;
-
-        if (launcherAllowedApps.indexOf(entry.id) !== -1)
-            return true;
-
-        const name = (entry.name || "").toLowerCase();
-        const startupClass = (entry.startupClass || "").toLowerCase();
-        const execString = (entry.execString || "").toLowerCase();
-
-        if (name === "discord" || startupClass === "discord" || execString.includes("discord"))
-            return true;
-
-        if (name === "google chrome" || startupClass === "google-chrome" || execString.includes("google-chrome"))
-            return true;
-
-        if (name === "reaper" || startupClass === "reaper" || execString.includes("reaper"))
-            return true;
-
-        return false;
-    }
-
     function isHiddenApp(entry: DesktopEntry): bool {
         if (!entry)
             return true;
 
-        if (isAllowedLauncherApp(entry))
-            return false;
-
-        if (hasCategory(entry, "Game"))
-            return false;
-
         if (entry.noDisplay)
             return true;
 
-        return true;
+        const desktopId = (entry.id || entry.desktopFile || "").toLowerCase();
+        if (desktopId.startsWith("wine-extension-") || desktopId.includes("/wine-extension-"))
+            return true;
+
+        if (desktopId.startsWith("wine-protocol-") || desktopId.includes("/wine-protocol-"))
+            return true;
+
+        if (!entry.name && !entry.id)
+            return true;
+
+        return false;
     }
 
     function closeOverlays(): void {
@@ -180,18 +149,20 @@ ShellRoot {
         switchMainOverlay("session", true);
     }
 
-    function toggleClockMenu(): void {
+    function toggleClockMenu(targetScreen: var): void {
         pendingOverlay = "";
         overlaySwitchTimer.stop();
         setMainOverlay("");
         activeTrayItem = null;
+        barPopupScreen = targetScreen || panelScreen;
         barMenu = barMenu === "clock" ? "" : "clock";
     }
 
-    function toggleTrayMenu(item: var): void {
+    function toggleTrayMenu(item: var, targetScreen: var): void {
         pendingOverlay = "";
         overlaySwitchTimer.stop();
         setMainOverlay("");
+        barPopupScreen = targetScreen || panelScreen;
 
         if (barMenu === "tray" && activeTrayItem === item) {
             barMenu = "";
@@ -205,7 +176,7 @@ ShellRoot {
 
     function runShell(command: string): void {
         Quickshell.execDetached({
-            command: ["sh", "-lc", command]
+            command: ["uwsm", "app", "-S", "both", "--", "sh", "-lc", command]
         });
     }
 
@@ -218,12 +189,12 @@ ShellRoot {
 
         if (entry.runInTerminal) {
             Quickshell.execDetached({
-                command: [terminal, "-e", ...entry.command],
+                command: ["uwsm", "app", "-S", "both", "--", terminal, "-e", ...entry.command],
                 workingDirectory: entry.workingDirectory
             });
         } else {
             Quickshell.execDetached({
-                command: entry.command,
+                command: ["uwsm", "app", "-S", "both", "--", ...entry.command],
                 workingDirectory: entry.workingDirectory
             });
         }
@@ -231,6 +202,12 @@ ShellRoot {
 
     Bar {
         shell: root
+        panelScreen: root.panelScreen
+    }
+
+    Bar {
+        shell: root
+        panelScreen: root.secondaryPanelScreen
     }
 
     Launcher {

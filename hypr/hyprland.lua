@@ -70,6 +70,25 @@ hl.window_rule({
   force_rgbx = true,
 })
 
+hl.window_rule({
+  name = "guitar-pro-wine",
+  match = {
+    class = [[guitarpro\.exe]],
+    xwayland = true,
+  },
+  float = true,
+  allows_input = true,
+  fullscreen_state = "0 0",
+  suppress_event = "fullscreen maximize fullscreenoutput",
+  focus_on_activate = true,
+  no_initial_focus = false,
+  no_anim = true,
+  no_blur = true,
+  no_shadow = true,
+  decorate = false,
+  opaque = true,
+  force_rgbx = true,
+})
 
 hl.window_rule({
   name = "yabridge-menu-popups",
@@ -99,15 +118,14 @@ hl.window_rule({
 hl.on("hyprland.start", function()
   hl.exec_cmd("hypridle")
   hl.exec_cmd("hyprpaper")
-  hl.exec_cmd("quickshell")
   hl.exec_cmd("steam -silent")
   hl.exec_cmd("blueman-applet")
   hl.exec_cmd("nm-applet")
   hl.exec_cmd("discord --start-minimized")
-  hl.exec_cmd(
-    "google-chrome-stable --new-window --start-fullscreen --app=http://192.168.1.67:3337/",
-    { workspace = "2 silent" }
-  )
+  --hl.exec_cmd(
+  --  "google-chrome-stable --new-window --start-fullscreen --app=http://192.168.1.67:3337/",
+  --  { workspace = "2 silent" }
+  --)
 end)
 
 ----------------
@@ -227,7 +245,19 @@ hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.dotfiles/scripts/volume_cont
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.dotfiles/scripts/volume_control down"), { repeating = true })
 hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.dotfiles/scripts/volume_control mute"), { repeating = false })
 
-hl.bind("SUPER + C", hl.dsp.send_shortcut({ mods = "CTRL", key = "C" }))
-hl.bind("SUPER + V", hl.dsp.send_shortcut({ mods = "CTRL", key = "V" }))
-hl.bind("SUPER + X", hl.dsp.send_shortcut({ mods = "CTRL", key = "X" }))
-hl.bind("SUPER + A", hl.dsp.send_shortcut({ mods = "CTRL", key = "A" }))
+local function sendKeyCombo(mods, key)
+  return function()
+    hl.dispatch(hl.dsp.send_key_state({ mods = mods, key = key, state = "down" }))
+    hl.dispatch(hl.dsp.send_key_state({ mods = mods, key = key, state = "up" }))
+  end
+end
+
+local function remapSuperToControl(key)
+  hl.bind("SUPER + " .. key, hl.dsp.no_op())
+  hl.bind("SUPER + " .. key, sendKeyCombo("CONTROL", key), { release = true })
+end
+
+remapSuperToControl("C")
+remapSuperToControl("V")
+remapSuperToControl("X")
+remapSuperToControl("A")

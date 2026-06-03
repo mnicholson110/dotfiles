@@ -14,7 +14,7 @@ PanelWindow {
     }
 
     required property QtObject shell
-    screen: shell.panelScreen
+    screen: shell.barPopupScreen
     property real revealHeight: 0
     property bool suspendAutoClose: false
     property string displayedMenu: ""

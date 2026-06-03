@@ -1,0 +1,16 @@
+[Unit]
+Description=Quickshell desktop shell
+Documentation=https://quickshell.org/docs/v0.3.0/guide/introduction/
+PartOf=graphical-session.target
+After=graphical-session.target
+ConditionEnvironment=WAYLAND_DISPLAY
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/quickshell --no-duplicate
+Restart=on-failure
+RestartSec=1s
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target

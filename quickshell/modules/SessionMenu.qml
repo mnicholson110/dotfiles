@@ -19,7 +19,7 @@ PanelWindow {
     property var pendingAction: null
     readonly property int gridColumns: 2
     readonly property int gridSpacing: 14
-    readonly property int panelWidth: Math.round(width * shell.centerPillWidthRatio)
+    readonly property int panelWidth: Math.max(360, Math.min(520, width - 56))
     readonly property int buttonWidth: Math.floor((panelWidth - 48 - ((gridColumns - 1) * gridSpacing)) / gridColumns)
     readonly property int buttonHeight: 88
 

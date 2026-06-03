@@ -6,6 +6,7 @@ import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import "../components" as Components
 
+
 PanelWindow {
     id: root
 
@@ -14,7 +15,8 @@ PanelWindow {
     }
 
     required property QtObject shell
-    screen: shell.panelScreen
+    property var panelScreen: shell.panelScreen
+    screen: root.panelScreen
 
     anchors {
         top: true
@@ -27,7 +29,7 @@ PanelWindow {
     exclusiveZone: shell.barReserve
 
     property date now: new Date()
-    readonly property string clockText: Qt.formatDateTime(now, "yyyy-MM-dd hh:mm AP")
+    readonly property string clockText: Qt.formatDateTime(now, "ddd MM/dd/yyyy hh:mm AP")
 
     function trayIconSource(icon: string): url {
         if (!icon)
@@ -50,16 +52,6 @@ PanelWindow {
             return Quickshell.iconPath(icon.slice(0, -9), "image-missing");
 
         return Quickshell.iconPath(icon, "image-missing");
-    }
-
-    function launcherIconSource(icon: string): url {
-        if (!icon)
-            return Quickshell.iconPath("application-x-executable");
-
-        if (icon.endsWith("-symbolic"))
-            return Quickshell.iconPath(icon.slice(0, -9), "application-x-executable");
-
-        return Quickshell.iconPath(icon, "application-x-executable");
     }
 
     Timer {
@@ -162,62 +154,106 @@ PanelWindow {
     }
 
     Rectangle {
-        id: barFrame
-
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        height: shell.barHeight
-        radius: 0
-        color: theme.surface
-        border.color: theme.borderStrong
-        border.width: 1
+        anchors.fill: parent
+        color: theme.background
+        border.width: 0
 
         Rectangle {
-            anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: parent.border.width + 1
-            color: theme.surface
-        }
-
-        Rectangle {
-            anchors.top: parent.top
             anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            width: parent.border.width + 1
-            color: theme.surface
-        }
-
-        Rectangle {
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            width: parent.border.width + 1
-            color: theme.surface
+            height: 1
+            color: theme.borderStrong
         }
 
         Item {
-            anchors.left: parent.left
-            anchors.leftMargin: 18
-            anchors.right: clockHitbox.left
-            anchors.rightMargin: 18
-            anchors.verticalCenter: parent.verticalCenter
-            height: leftRow.implicitHeight
+            id: titleStage
+
+            anchors.centerIn: parent
+            width: Math.max(320, Math.min(460, parent.width * 0.42))
+            height: parent.height
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: 34
+                height: 1
+                color: theme.borderStrong
+            }
+
+            Rectangle {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                width: 34
+                height: 1
+                color: theme.borderStrong
+            }
 
             RowLayout {
-                id: leftRow
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.centerIn: parent
+                anchors.leftMargin: 44
+                anchors.rightMargin: 44
+                spacing: 10
 
+                Rectangle {
+                    Layout.preferredWidth: 5
+                    Layout.preferredHeight: 5
+                    radius: 1
+                    color: theme.primaryStrong
+                    Layout.alignment: Qt.AlignVCenter
+
+                    SequentialAnimation on opacity {
+                        loops: Animation.Infinite
+                        NumberAnimation {
+                            to: 0.28
+                            duration: 620
+                            easing.type: Easing.InOutQuad
+                        }
+                        NumberAnimation {
+                            to: 1
+                            duration: 620
+                            easing.type: Easing.InOutQuad
+                        }
+                    }
+                }
+
+                Text {
+                    text: "desktop"
+                    color: theme.textMuted
+                    elide: Text.ElideRight
+                    font.family: "GoMono Nerd Font Mono"
+                    font.pixelSize: 13
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                }
+            }
+        }
+
+        Item {
+            id: leftZone
+
+            anchors.left: parent.left
+            anchors.right: titleStage.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: 14
+            anchors.rightMargin: 12
+            clip: true
+
+            RowLayout {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 10
 
                 Row {
+                    visible: SystemTray.items.values.length > 0
                     spacing: 8
+                    Layout.alignment: Qt.AlignVCenter
 
                     Repeater {
-                        id: trayRepeater
-
                         model: SystemTray.items.values
 
                         MouseArea {
@@ -228,16 +264,19 @@ PanelWindow {
                             hoverEnabled: true
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
                             cursorShape: Qt.PointingHandCursor
-                            opacity: containsMouse ? 1 : 0.84
+                            opacity: containsMouse ? 1 : 0.78
 
                             onClicked: event => {
                                 if (event.button === Qt.LeftButton) {
                                     if (modelData.hasMenu)
-                                        shell.toggleTrayMenu(modelData);
+                                        shell.toggleTrayMenu(modelData, root.panelScreen);
                                     else
                                         modelData.activate();
                                 } else {
-                                    modelData.secondaryActivate();
+                                    if (modelData.hasMenu)
+                                        shell.toggleTrayMenu(modelData, root.panelScreen);
+                                    else
+                                        modelData.secondaryActivate();
                                 }
                             }
 
@@ -251,10 +290,11 @@ PanelWindow {
                 }
 
                 Rectangle {
-                    visible: controllerBattery.text.length > 0 || gloveBattery.text.length > 0
-                    width: 1
-                    height: 18
+                    visible: SystemTray.items.values.length > 0 && (controllerBattery.text.length > 0 || gloveBattery.text.length > 0)
+                    Layout.preferredWidth: 1
+                    Layout.preferredHeight: 18
                     color: theme.border
+                    Layout.alignment: Qt.AlignVCenter
                 }
 
                 Text {
@@ -263,7 +303,8 @@ PanelWindow {
                     color: theme.textMuted
                     font.family: "GoMono Nerd Font Mono"
                     font.bold: true
-                    font.pixelSize: 13
+                    font.pixelSize: 12
+                    Layout.alignment: Qt.AlignVCenter
                 }
 
                 Text {
@@ -272,48 +313,61 @@ PanelWindow {
                     color: theme.textMuted
                     font.family: "GoMono Nerd Font Mono"
                     font.bold: true
-                    font.pixelSize: 13
+                    font.pixelSize: 12
+                    Layout.alignment: Qt.AlignVCenter
                 }
             }
         }
 
         Item {
-            id: clockHitbox
+            id: rightZone
 
+            anchors.left: titleStage.right
             anchors.right: parent.right
-            anchors.rightMargin: 18
-            anchors.verticalCenter: parent.verticalCenter
-            implicitWidth: clockRow.implicitWidth
-            implicitHeight: clockRow.implicitHeight
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: 12
+            anchors.rightMargin: 14
+            clip: true
 
-            RowLayout {
-                id: clockRow
+            Item {
+                id: clockHitbox
 
-                anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
-                spacing: 8
+                anchors.verticalCenter: parent.verticalCenter
+                width: clockRow.implicitWidth
+                height: 28
 
-                Rectangle {
-                    width: 7
-                    height: 7
-                    radius: 4
-                    color: shell.barMenu === "clock" ? theme.primaryStrong : theme.textFaint
+                RowLayout {
+                    id: clockRow
+
+                    anchors.centerIn: parent
+                    spacing: 8
+
+                    Rectangle {
+                        width: 7
+                        height: 7
+                        radius: 1
+                        color: shell.barMenu === "clock" ? theme.primaryStrong : theme.textFaint
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Text {
+                        text: root.clockText
+                        color: theme.text
+                        font.family: "GoMono Nerd Font Mono"
+                        font.bold: true
+                        font.pixelSize: 13
+                        Layout.alignment: Qt.AlignVCenter
+                    }
                 }
 
-                Text {
-                    text: root.clockText
-                    color: theme.primary
-                    font.family: "GoMono Nerd Font Mono"
-                    font.bold: true
-                    font.pixelSize: 15
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: shell.toggleClockMenu(root.panelScreen)
                 }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: shell.toggleClockMenu()
             }
         }
     }
