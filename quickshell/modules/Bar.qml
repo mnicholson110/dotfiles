@@ -173,22 +173,6 @@ PanelWindow {
             width: Math.max(320, Math.min(460, parent.width * 0.42))
             height: parent.height
 
-            Rectangle {
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                width: 34
-                height: 1
-                color: theme.borderStrong
-            }
-
-            Rectangle {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                width: 34
-                height: 1
-                color: theme.borderStrong
-            }
-
             RowLayout {
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -198,37 +182,6 @@ PanelWindow {
                 anchors.rightMargin: 44
                 spacing: 10
 
-                Rectangle {
-                    Layout.preferredWidth: 5
-                    Layout.preferredHeight: 5
-                    radius: 1
-                    color: theme.primaryStrong
-                    Layout.alignment: Qt.AlignVCenter
-
-                    SequentialAnimation on opacity {
-                        loops: Animation.Infinite
-                        NumberAnimation {
-                            to: 0.28
-                            duration: 620
-                            easing.type: Easing.InOutQuad
-                        }
-                        NumberAnimation {
-                            to: 1
-                            duration: 620
-                            easing.type: Easing.InOutQuad
-                        }
-                    }
-                }
-
-                Text {
-                    text: "desktop"
-                    color: theme.textMuted
-                    elide: Text.ElideRight
-                    font.family: "GoMono Nerd Font Mono"
-                    font.pixelSize: 13
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
-                }
             }
         }
 

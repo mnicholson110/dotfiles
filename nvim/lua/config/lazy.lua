@@ -26,5 +26,3 @@ require("lazy").setup({
 })
 
 vim.cmd [[autocmd TermOpen * setlocal nonumber norelativenumber]]
-
-vim.cmd("colorscheme onedark")

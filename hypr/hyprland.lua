@@ -38,6 +38,26 @@ hl.window_rule({
 })
 
 hl.window_rule({
+  name = "battle-net-steam-proton",
+  match = {
+    class = [[steam_app_3536744353]],
+    xwayland = true,
+  },
+  allows_input = true,
+  sync_fullscreen = false,
+  fullscreen_state = "0 0",
+  suppress_event = "fullscreen maximize fullscreenoutput",
+  focus_on_activate = true,
+  no_initial_focus = false,
+  no_anim = true,
+  no_blur = true,
+  no_shadow = true,
+  decorate = false,
+  opaque = true,
+  force_rgbx = true,
+})
+
+hl.window_rule({
   name = "reaper-query-dialog",
   match = {
     class = [[REAPER]],

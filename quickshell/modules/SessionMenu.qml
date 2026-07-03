@@ -51,12 +51,14 @@ PanelWindow {
         {
             id: "shutdown",
             label: "Shutdown",
-            command: "systemctl poweroff"
+            command: ["systemctl", "--no-block", "poweroff"],
+            detached: true
         },
         {
             id: "reboot",
             label: "Reboot",
-            command: "systemctl reboot"
+            command: ["systemctl", "--no-block", "reboot"],
+            detached: true
         }
     ]
 
@@ -65,6 +67,11 @@ PanelWindow {
         if (action && action.id === "lock") {
             pendingAction = action;
             actionTimer.restart();
+            return;
+        }
+
+        if (action.detached) {
+            shell.runDetached(action.command);
             return;
         }
 

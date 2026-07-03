@@ -1,4 +1,4 @@
-export PATH="$HOME/.dotfiles/scripts/:$HOME/.local/bin/:$HOME/.go/bin:/usr/lib/jvm/java-22-openjdk/bin/:$PATH"
+export PATH="$HOME/.dotfiles/scripts/:$HOME/.local/bin/:$HOME/.go/bin:/usr/lib/jvm/java-22-openjdk/bin/:$HOME/.cargo/bin:$PATH"
 
 export ZSH="$HOME/.oh-my-zsh"
 export ZSH_CUSTOM="$HOME/.dotfiles/oh-my-zsh"

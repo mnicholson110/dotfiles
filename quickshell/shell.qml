@@ -180,6 +180,12 @@ ShellRoot {
         });
     }
 
+    function runDetached(command: var): void {
+        Quickshell.execDetached({
+            command: command
+        });
+    }
+
     function launchDesktopEntry(entry: DesktopEntry): void {
         if (!entry)
             return;
