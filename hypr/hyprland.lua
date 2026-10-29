@@ -233,6 +233,7 @@ hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("qs ipc call myshell toggleSession"))
 hl.bind(mainMod .. " + V", hl.dsp.window.float())
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("qs ipc call myshell toggleLauncher"))
+hl.bind(mainMod .. " + SHIFT + Escape", hl.dsp.exec_cmd("qs ipc call myshell closeAll"))
 
 hl.bind(mainMod .. " + left", hl.dsp.focus({ direction = "l" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "r" }))

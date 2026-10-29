@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Io
 import Quickshell.Services.SystemTray
 import Quickshell.Widgets
 import "../components" as Components
@@ -15,7 +14,7 @@ PanelWindow {
     }
 
     required property QtObject shell
-    property var panelScreen: shell.panelScreen
+    required property var panelScreen
     screen: root.panelScreen
 
     anchors {
@@ -24,12 +23,9 @@ PanelWindow {
         right: true
     }
 
-    color: "transparent"
+    color: theme.background
     implicitHeight: shell.barHeight
     exclusiveZone: shell.barReserve
-
-    property date now: new Date()
-    readonly property string clockText: Qt.formatDateTime(now, "ddd MM/dd/yyyy hh:mm AP")
 
     function trayIconSource(icon: string): url {
         if (!icon)
@@ -52,105 +48,6 @@ PanelWindow {
             return Quickshell.iconPath(icon.slice(0, -9), "image-missing");
 
         return Quickshell.iconPath(icon, "image-missing");
-    }
-
-    Timer {
-        interval: 1000
-        repeat: true
-        running: true
-        onTriggered: root.now = new Date()
-    }
-
-    Item {
-        id: controllerBattery
-
-        visible: false
-        width: 0
-        height: 0
-
-        property string text: ""
-        property string tooltip: ""
-
-        function updateFrom(raw: string): void {
-            const trimmed = raw.trim();
-            if (!trimmed) {
-                text = "";
-                tooltip = "";
-                return;
-            }
-
-            try {
-                const payload = JSON.parse(trimmed);
-                text = payload.text || "";
-                tooltip = payload.tooltip || "";
-            } catch (_) {
-                text = trimmed;
-                tooltip = trimmed;
-            }
-        }
-
-        Process {
-            id: controllerBatteryProc
-
-            command: ["sh", "-lc", "/home/matt/.dotfiles/scripts/controller_bat"]
-            stdout: StdioCollector {
-                onStreamFinished: controllerBattery.updateFrom(this.text)
-            }
-        }
-
-        Timer {
-            interval: 10000
-            repeat: true
-            running: true
-            triggeredOnStart: true
-            onTriggered: controllerBatteryProc.running = true
-        }
-    }
-
-    Item {
-        id: gloveBattery
-
-        visible: false
-        width: 0
-        height: 0
-
-        property string text: ""
-        property string tooltip: ""
-
-        function updateFrom(raw: string): void {
-            const trimmed = raw.trim();
-            if (!trimmed) {
-                text = "";
-                tooltip = "";
-                return;
-            }
-
-            try {
-                const payload = JSON.parse(trimmed);
-                text = payload.text || "";
-                tooltip = payload.tooltip || "";
-            } catch (_) {
-                text = trimmed;
-                tooltip = trimmed;
-            }
-        }
-
-        Process {
-            id: gloveBatteryProc
-
-            command: ["sh", "-lc", "/home/matt/.dotfiles/scripts/glove80_bat"]
-            stdout: StdioCollector {
-                onStreamFinished: gloveBattery.updateFrom(this.text)
-            }
-        }
-
-        Timer {
-            interval: 10000
-            repeat: true
-            running: true
-            triggeredOnStart: true
-            onTriggered: gloveBatteryProc.running = true
-        }
     }
 
     Rectangle {
@@ -243,7 +140,7 @@ PanelWindow {
                 }
 
                 Rectangle {
-                    visible: SystemTray.items.values.length > 0 && (controllerBattery.text.length > 0 || gloveBattery.text.length > 0)
+                    visible: SystemTray.items.values.length > 0 && (shell.controllerBatteryText.length > 0 || shell.gloveBatteryText.length > 0 || shell.deathadderBatteryText.length > 0)
                     Layout.preferredWidth: 1
                     Layout.preferredHeight: 18
                     color: theme.border
@@ -251,8 +148,8 @@ PanelWindow {
                 }
 
                 Text {
-                    visible: controllerBattery.text.length > 0
-                    text: `PS5 ${controllerBattery.text}`
+                    visible: shell.controllerBatteryText.length > 0
+                    text: `PS5 ${shell.controllerBatteryText}`
                     color: theme.textMuted
                     font.family: "GoMono Nerd Font Mono"
                     font.bold: true
@@ -261,8 +158,18 @@ PanelWindow {
                 }
 
                 Text {
-                    visible: gloveBattery.text.length > 0
-                    text: `GLV ${gloveBattery.text}`
+                    visible: shell.gloveBatteryText.length > 0
+                    text: `GLV ${shell.gloveBatteryText}`
+                    color: theme.textMuted
+                    font.family: "GoMono Nerd Font Mono"
+                    font.bold: true
+                    font.pixelSize: 12
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                Text {
+                    visible: shell.deathadderBatteryText.length > 0
+                    text: `DA ${shell.deathadderBatteryText}`
                     color: theme.textMuted
                     font.family: "GoMono Nerd Font Mono"
                     font.bold: true
@@ -306,7 +213,7 @@ PanelWindow {
                     }
 
                     Text {
-                        text: root.clockText
+                        text: shell.clockText
                         color: theme.text
                         font.family: "GoMono Nerd Font Mono"
                         font.bold: true

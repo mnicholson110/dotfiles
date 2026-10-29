@@ -1,0 +1,57 @@
+#!/usr/bin/python
+"""Read DeathAdder V4 Pro battery over HID; requires python-hidapi.
+
+Protocol: openrazer/openrazer driver/razermouse_driver.c and
+driver/razerchromacommon.c (battery 0x07/0x80, charging 0x07/0x84).
+Install quickshell/udev/70-deathadder-battery.rules for desktop access.
+"""
+
+import functools
+import json
+import operator
+import sys
+import time
+
+import hid
+
+
+def query(device, command):
+    report = bytearray(90)
+    report[1] = 0x1F
+    report[5:8] = bytes((2, 7, command))
+    report[88] = functools.reduce(operator.xor, report[2:88])
+    if device.send_feature_report(bytes([0]) + report) != 91:
+        raise OSError("Incomplete battery request")
+    time.sleep(0.1)
+    raw = bytes(device.get_feature_report(0, 91))
+    response = raw[1:]  # hidapi includes report ID 0.
+    if (len(raw) != 91 or raw[0] != 0 or response[0] != 2
+            or response[1] != 0x1F or response[5:8] != report[5:8]
+            or response[88] != functools.reduce(operator.xor, response[2:88])):
+        raise OSError("Mouse unavailable or invalid battery response")
+    return response[9]
+
+
+def battery():
+    # Prefer a directly connected mouse when the receiver is also plugged in.
+    for product_id in (0x00BE, 0x00BF):
+        for info in hid.enumerate(0x1532, product_id):
+            if info["interface_number"] != 0:
+                continue
+            device = hid.device()
+            try:
+                device.open_path(info["path"])
+                percent = round(query(device, 0x80) * 100 / 255)
+                charging = query(device, 0x84) == 1
+                text = f"{percent}%" + (" +" if charging else "")
+                return {"text": text, "tooltip": f"DeathAdder V4 Pro: {percent}%"
+                        + (" (charging)" if charging else ""), "class": "deathadder"}
+            except (OSError, ValueError) as error:
+                print(f"deathadder_bat: {error}", file=sys.stderr)
+            finally:
+                device.close()
+    return {"text": "", "tooltip": "DeathAdder unavailable", "class": "deathadder"}
+
+
+if __name__ == "__main__":
+    print(json.dumps(battery()))

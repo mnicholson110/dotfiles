@@ -19,6 +19,7 @@ PanelWindow {
 
     readonly property int stackWidth: 392
     readonly property int stackSpacing: 10
+    readonly property int maxVisibleNotifications: 4
     property var visibleNotifications: []
     signal notificationRefreshed(var notification)
 
@@ -177,7 +178,7 @@ PanelWindow {
                 const existing = root.visibleNotifications[sameAppIndex];
                 const updated = root.visibleNotifications.slice();
                 updated[sameAppIndex] = notification;
-                root.visibleNotifications = updated;
+                root.visibleNotifications = root.cappedNotifications(updated);
 
                 if (existing && existing !== notification && existing.tracked)
                     existing.tracked = false;
@@ -187,8 +188,20 @@ PanelWindow {
             }
         }
 
-        root.visibleNotifications = [notification, ...root.visibleNotifications];
+        root.visibleNotifications = root.cappedNotifications([notification, ...root.visibleNotifications]);
         root.notificationRefreshed(notification);
+    }
+
+    function cappedNotifications(notifications): var {
+        const kept = notifications.slice(0, root.maxVisibleNotifications);
+        const overflow = notifications.slice(root.maxVisibleNotifications);
+
+        for (const notification of overflow) {
+            if (notification && notification.tracked)
+                notification.tracked = false;
+        }
+
+        return kept;
     }
 
     function removeVisibleNotification(notification): void {

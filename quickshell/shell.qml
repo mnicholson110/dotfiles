@@ -1,6 +1,7 @@
 //@ pragma IconTheme Papirus-Dark
 import QtQuick
 import Quickshell
+import Quickshell.Bluetooth
 import Quickshell.Io
 import "modules"
 
@@ -9,6 +10,8 @@ ShellRoot {
 
     property bool launcherOpen: false
     property bool sessionOpen: false
+    property bool launcherLoaded: false
+    property bool sessionLoaded: false
     property string barMenu: ""
     property var activeTrayItem: null
     property int barHeight: 42
@@ -16,12 +19,52 @@ ShellRoot {
     property string panelOutputName: "DP-2"
     property string secondaryPanelOutputName: "DP-1"
     readonly property var panelScreen: screenByName(panelOutputName)
-    readonly property var secondaryPanelScreen: screenByName(secondaryPanelOutputName)
+    readonly property var barScreens: {
+        const screens = [];
+
+        for (const screen of Quickshell.screens) {
+            if (screen.name === panelOutputName || screen.name === secondaryPanelOutputName)
+                screens.push(screen);
+        }
+
+        if (screens.length > 0)
+            return screens;
+
+        return Quickshell.screens.length > 0 ? [Quickshell.screens[0]] : [];
+    }
     property var barPopupScreen: panelScreen
     property string pendingOverlay: ""
     property string terminal: "kitty"
     property list<string> launcherHistoryIds: []
     property int launcherHistoryLimit: 10
+    property string controllerBatteryText: ""
+    property string controllerBatteryTooltip: ""
+    property string deathadderBatteryText: ""
+    property string deathadderBatteryTooltip: ""
+    readonly property var glove80Device: {
+        for (const device of Bluetooth.devices.values) {
+            const name = `${device.name || ""} ${device.deviceName || ""}`.toLowerCase();
+            if (name.includes("glove80"))
+                return device;
+        }
+
+        return null;
+    }
+    readonly property string gloveBatteryText: {
+        const device = glove80Device;
+        if (!device || !device.connected || !device.batteryAvailable)
+            return "";
+
+        return `${Math.round(device.battery * 100)}%`;
+    }
+    readonly property string gloveBatteryTooltip: {
+        const device = glove80Device;
+        if (!device || !device.connected || !device.batteryAvailable)
+            return "";
+
+        return `${device.name || device.deviceName || "Glove80"}: ${gloveBatteryText}`;
+    }
+    readonly property string clockText: Qt.formatDateTime(shellClock.date, "ddd MM/dd/yyyy hh:mm AP")
 
     function screenByName(name: string): var {
         for (const screen of Quickshell.screens) {
@@ -101,18 +144,71 @@ ShellRoot {
         return false;
     }
 
+    function updateControllerBattery(raw: string): void {
+        const trimmed = raw.trim();
+        if (!trimmed) {
+            controllerBatteryText = "";
+            controllerBatteryTooltip = "";
+            return;
+        }
+
+        try {
+            const payload = JSON.parse(trimmed);
+            controllerBatteryText = payload.text || "";
+            controllerBatteryTooltip = payload.tooltip || "";
+        } catch (_) {
+            controllerBatteryText = trimmed;
+            controllerBatteryTooltip = trimmed;
+        }
+    }
+
+    function updateDeathadderBattery(raw: string): void {
+        try {
+            const payload = JSON.parse(raw);
+            deathadderBatteryText = payload.text || "";
+            deathadderBatteryTooltip = payload.tooltip || "";
+        } catch (_) {
+            deathadderBatteryText = "";
+            deathadderBatteryTooltip = "";
+        }
+    }
+
+    function setLauncherState(open: bool): void {
+        if (open) {
+            launcherUnloadTimer.stop();
+            launcherLoaded = true;
+        }
+
+        launcherOpen = open;
+
+        if (!open && launcherLoaded)
+            launcherUnloadTimer.restart();
+    }
+
+    function setSessionState(open: bool): void {
+        if (open) {
+            sessionUnloadTimer.stop();
+            sessionLoaded = true;
+        }
+
+        sessionOpen = open;
+
+        if (!open && sessionLoaded)
+            sessionUnloadTimer.restart();
+    }
+
     function closeOverlays(): void {
         pendingOverlay = "";
         overlaySwitchTimer.stop();
-        launcherOpen = false;
-        sessionOpen = false;
+        setLauncherState(false);
+        setSessionState(false);
         barMenu = "";
         activeTrayItem = null;
     }
 
     function setMainOverlay(name: string): void {
-        launcherOpen = name === "launcher";
-        sessionOpen = name === "session";
+        setLauncherState(name === "launcher");
+        setSessionState(name === "session");
     }
 
     function switchMainOverlay(name: string, toggled: bool): void {
@@ -176,7 +272,7 @@ ShellRoot {
 
     function runShell(command: string): void {
         Quickshell.execDetached({
-            command: ["uwsm", "app", "-S", "both", "--", "sh", "-lc", command]
+            command: ["uwsm", "app", "-S", "both", "--", "sh", "-c", command]
         });
     }
 
@@ -206,22 +302,77 @@ ShellRoot {
         }
     }
 
-    Bar {
-        shell: root
-        panelScreen: root.panelScreen
+    SystemClock {
+        id: shellClock
+
+        precision: SystemClock.Minutes
     }
 
-    Bar {
-        shell: root
-        panelScreen: root.secondaryPanelScreen
+    Process {
+        id: controllerBatteryProc
+
+        command: ["/home/matt/.dotfiles/scripts/controller_bat"]
+        stdout: StdioCollector {
+            onStreamFinished: root.updateControllerBattery(this.text)
+        }
     }
 
-    Launcher {
-        shell: root
+    Timer {
+        interval: 30000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: controllerBatteryProc.running = true
     }
 
-    SessionMenu {
-        shell: root
+    Process {
+        id: deathadderBatteryProc
+
+        command: ["timeout", "5s", "/home/matt/.dotfiles/scripts/deathadder_bat"]
+        stdout: StdioCollector {
+            onStreamFinished: root.updateDeathadderBattery(this.text)
+        }
+    }
+
+    Timer {
+        interval: 30000
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: deathadderBatteryProc.running = true
+    }
+
+    Variants {
+        model: root.barScreens
+
+        delegate: Component {
+            Bar {
+                required property var modelData
+
+                shell: root
+                panelScreen: modelData
+            }
+        }
+    }
+
+    LazyLoader {
+        active: root.launcherLoaded
+
+        component: Component {
+            Launcher {
+                shell: root
+            }
+        }
+    }
+
+    LazyLoader {
+        active: root.sessionLoaded
+
+        component: Component {
+            SessionMenu {
+                shell: root
+            }
+        }
     }
 
     BarPopups {
@@ -244,12 +395,34 @@ ShellRoot {
         }
     }
 
+    Timer {
+        id: launcherUnloadTimer
+
+        interval: 180
+        repeat: false
+        onTriggered: {
+            if (!root.launcherOpen)
+                root.launcherLoaded = false;
+        }
+    }
+
+    Timer {
+        id: sessionUnloadTimer
+
+        interval: 190
+        repeat: false
+        onTriggered: {
+            if (!root.sessionOpen)
+                root.sessionLoaded = false;
+        }
+    }
+
     Process {
         id: launcherHistoryLoadProc
 
         command: [
             "sh",
-            "-lc",
+            "-c",
             "mkdir -p \"$HOME/.cache/quickshell\" && cat \"$HOME/.cache/quickshell/launcher-history\" 2>/dev/null || cat \"$HOME/.cache/quickshell/launcher-mru\" 2>/dev/null || true"
         ]
         stdout: StdioCollector {
@@ -262,7 +435,7 @@ ShellRoot {
 
         command: [
             "sh",
-            "-lc",
+            "-c",
             "mkdir -p \"$HOME/.cache/quickshell\" && printf '%s\\n' \"$@\" > \"$HOME/.cache/quickshell/launcher-history\"",
             "launcher-history",
             ...root.launcherHistoryIds
@@ -273,6 +446,14 @@ ShellRoot {
 
     Scope {
         IpcHandler {
+            function batteryStatus(): string {
+                return JSON.stringify({
+                    ps5: root.controllerBatteryText,
+                    glove80: root.gloveBatteryText,
+                    deathadder: root.deathadderBatteryText
+                });
+            }
+
             function toggleLauncher(): void {
                 root.toggleLauncher();
             }
@@ -282,7 +463,7 @@ ShellRoot {
             }
 
             function hideLauncher(): void {
-                root.launcherOpen = false;
+                root.setLauncherState(false);
             }
 
             function toggleSession(): void {
@@ -294,7 +475,7 @@ ShellRoot {
             }
 
             function hideSession(): void {
-                root.sessionOpen = false;
+                root.setSessionState(false);
             }
 
             function closeAll(): void {

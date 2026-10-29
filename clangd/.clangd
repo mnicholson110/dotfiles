@@ -1,5 +1,4 @@
 CompileFlags:
   Add:
-    - -I/opt/homebrew/include
     - -xc
-    - -std=c11
+    - -std=c23

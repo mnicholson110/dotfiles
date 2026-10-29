@@ -32,7 +32,7 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: shell.launcherOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: shell.launcherOpen && root.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     implicitHeight: revealHeight
 
     readonly property var visibleApps: {
@@ -156,6 +156,17 @@ PanelWindow {
         }
     }
 
+    Component.onCompleted: {
+        if (!shell.launcherOpen)
+            return;
+
+        root.searchText = "";
+        searchInput.text = "";
+        root.resetSelection();
+        openAnim.start();
+        focusTimer.restart();
+    }
+
     NumberAnimation {
         id: openAnim
 
@@ -200,7 +211,7 @@ PanelWindow {
     }
 
     HyprlandFocusGrab {
-        active: shell.launcherOpen
+        active: shell.launcherOpen && root.visible && root.revealHeight > 0
         windows: [QsWindow.window]
         onCleared: shell.closeOverlays()
     }
@@ -447,7 +458,7 @@ PanelWindow {
                         currentIndex: model.length > 0 ? 0 : -1
                         keyNavigationWraps: false
                         interactive: contentHeight > height
-                        cacheBuffer: 600
+                        cacheBuffer: 160
 
                         delegate: Rectangle {
                             id: appDelegate

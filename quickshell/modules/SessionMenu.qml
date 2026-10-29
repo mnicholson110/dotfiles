@@ -34,7 +34,7 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: shell.sessionOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: shell.sessionOpen && root.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     implicitHeight: revealHeight
 
     readonly property var actions: [
@@ -46,7 +46,8 @@ PanelWindow {
         {
             id: "logout",
             label: "Logout",
-            command: "hyprctl dispatch exit"
+            command: ["uwsm", "stop"],
+            detached: true
         },
         {
             id: "shutdown",
@@ -105,6 +106,14 @@ PanelWindow {
                 closeAnim.start();
             }
         }
+    }
+
+    Component.onCompleted: {
+        if (!shell.sessionOpen)
+            return;
+
+        openAnim.start();
+        focusTimer.restart();
     }
 
     NumberAnimation {
@@ -168,7 +177,7 @@ PanelWindow {
     }
 
     HyprlandFocusGrab {
-        active: shell.sessionOpen
+        active: shell.sessionOpen && root.visible && root.revealHeight > 0
         windows: [QsWindow.window]
         onCleared: shell.closeOverlays()
     }

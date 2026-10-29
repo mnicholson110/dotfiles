@@ -1,0 +1,3 @@
+# Allow the active local desktop user to query the DeathAdder V4 Pro.
+# Match only interface 0, for wired (00be) and wireless (00bf) connections.
+ACTION!="remove", SUBSYSTEM=="hidraw", ENV{ID_VENDOR_ID}=="1532", ENV{ID_MODEL_ID}=="00be|00bf", ENV{ID_USB_INTERFACE_NUM}=="00", TAG+="uaccess"

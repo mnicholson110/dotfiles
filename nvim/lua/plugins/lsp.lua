@@ -18,6 +18,11 @@ return {
                 bin = "gopls",
             },
             {
+                name = "pyright",
+                bin = "pyright-langserver",
+                cmd = { "pyright-langserver", "--stdio" },
+            },
+            {
                 name = "rust_analyzer",
                 bin = "rust-analyzer",
             },
@@ -32,7 +37,7 @@ return {
         for _, server in ipairs(servers) do
             if vim.fn.executable(server.bin) == 1 then
                 local config = {
-                    cmd = { server.bin },
+                    cmd = server.cmd or { server.bin },
                 }
 
                 if server.settings then
