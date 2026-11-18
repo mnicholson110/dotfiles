@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import "../components" as Components
@@ -94,11 +93,12 @@ PanelWindow {
     }
 
     anchors {
-        top: true
-        left: true
+        bottom: true
         right: true
     }
-    margins.top: shell.barHeight - 1
+    margins.bottom: shell.dockInset + shell.dockSize
+    margins.right: shell.dockInset
+    implicitWidth: popupLoader.item ? popupLoader.item.implicitWidth : 1
 
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
@@ -180,10 +180,7 @@ PanelWindow {
             onLoaded: root.syncPopupHeight()
             anchors.top: parent.top
             anchors.topMargin: 0
-            anchors.left: root.displayedMenu === "tray" ? parent.left : undefined
-            anchors.leftMargin: 0
-            anchors.right: root.displayedMenu === "clock" ? parent.right : undefined
-            anchors.rightMargin: 0
+            anchors.right: parent.right
         }
 
         Connections {
@@ -219,54 +216,13 @@ PanelWindow {
 
             property var trayItem: null
 
-            antialiasing: false
-            color: theme.surface
+            antialiasing: true
+            color: theme.background
             radius: theme.radius
-            topLeftRadius: 0
-            topRightRadius: 0
             border.color: theme.borderStrong
-            border.width: 0
+            border.width: 1
             implicitWidth: Math.max(260, stack.implicitWidth + 24)
             implicitHeight: stack.implicitHeight + 24
-
-            Shape {
-                anchors.fill: parent
-                preferredRendererType: Shape.GeometryRenderer
-
-                ShapePath {
-                    strokeWidth: 1
-                    strokeColor: theme.borderStrong
-                    fillColor: "transparent"
-                    capStyle: ShapePath.FlatCap
-                    joinStyle: ShapePath.RoundJoin
-                    startX: trayCard.width - 0.5
-                    startY: 0
-
-                    PathLine {
-                        x: trayCard.width - 0.5
-                        y: trayCard.height - trayCard.radius
-                    }
-
-                    PathArc {
-                        x: trayCard.width - trayCard.radius
-                        y: trayCard.height - 0.5
-                        radiusX: trayCard.radius
-                        radiusY: trayCard.radius
-                    }
-
-                    PathLine {
-                        x: trayCard.radius
-                        y: trayCard.height - 0.5
-                    }
-
-                    PathArc {
-                        x: 0.5
-                        y: trayCard.height - trayCard.radius
-                        radiusX: trayCard.radius
-                        radiusY: trayCard.radius
-                    }
-                }
-            }
 
             MouseArea {
                 anchors.fill: parent
@@ -328,7 +284,7 @@ PanelWindow {
                             color: theme.text
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
-                            font.family: "GoMono Nerd Font Mono"
+                            font.family: theme.fontFamily
                             font.bold: true
                             font.pixelSize: 14
                         }
@@ -389,7 +345,7 @@ PanelWindow {
                                         text: menuItem.modelData.text
                                         color: theme.text
                                         elide: Text.ElideRight
-                                        font.family: "GoMono Nerd Font Mono"
+                                        font.family: theme.fontFamily
                                         font.pixelSize: 14
                                         Layout.fillWidth: true
                                     }
@@ -398,7 +354,7 @@ PanelWindow {
                                         visible: menuItem.modelData.hasChildren
                                         text: ">"
                                         color: theme.textMuted
-                                        font.family: "GoMono Nerd Font Mono"
+                                        font.family: theme.fontFamily
                                         font.pixelSize: 14
                                     }
                                 }
@@ -420,58 +376,15 @@ PanelWindow {
             readonly property int currentMonth: currentDate.getMonth()
             readonly property int currentYear: currentDate.getFullYear()
 
-            antialiasing: false
+            antialiasing: true
             width: 388
             height: 360
             implicitWidth: width
             implicitHeight: height
-            color: theme.surface
+            color: theme.background
             radius: theme.radius
-            topLeftRadius: 0
-            topRightRadius: 0
             border.color: theme.borderStrong
-            border.width: 0
-
-            Shape {
-                anchors.fill: parent
-                preferredRendererType: Shape.GeometryRenderer
-
-                ShapePath {
-                    strokeWidth: 1
-                    strokeColor: theme.borderStrong
-                    fillColor: "transparent"
-                    capStyle: ShapePath.FlatCap
-                    joinStyle: ShapePath.RoundJoin
-                    startX: 1
-                    startY: 0
-
-                    PathLine {
-                        x: 1
-                        y: calendarCard.height - calendarCard.radius - 1
-                    }
-
-                    PathArc {
-                        x: calendarCard.radius + 1
-                        y: calendarCard.height - 1
-                        radiusX: calendarCard.radius
-                        radiusY: calendarCard.radius
-                        direction: PathArc.Counterclockwise
-                    }
-
-                    PathLine {
-                        x: calendarCard.width - calendarCard.radius - 1
-                        y: calendarCard.height - 1
-                    }
-
-                    PathArc {
-                        x: calendarCard.width - 1
-                        y: calendarCard.height - calendarCard.radius - 1
-                        radiusX: calendarCard.radius
-                        radiusY: calendarCard.radius
-                        direction: PathArc.Counterclockwise
-                    }
-                }
-            }
+            border.width: 1
 
             MouseArea {
                 anchors.fill: parent
@@ -505,7 +418,7 @@ PanelWindow {
                             color: theme.text
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
-                            font.family: "GoMono Nerd Font Mono"
+                            font.family: theme.fontFamily
                             font.bold: true
                             font.pixelSize: 16
                         }
@@ -515,7 +428,7 @@ PanelWindow {
                         text: Qt.locale().standaloneMonthName(calendarCard.currentMonth) + " " + calendarCard.currentYear
                         color: theme.text
                         horizontalAlignment: Text.AlignHCenter
-                        font.family: "GoMono Nerd Font Mono"
+                        font.family: theme.fontFamily
                         font.bold: true
                         font.pixelSize: 17
                         Layout.fillWidth: true
@@ -539,7 +452,7 @@ PanelWindow {
                             color: theme.text
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
-                            font.family: "GoMono Nerd Font Mono"
+                            font.family: theme.fontFamily
                             font.bold: true
                             font.pixelSize: 16
                         }
@@ -555,7 +468,7 @@ PanelWindow {
                         text: model.shortName
                         color: theme.textMuted
                         horizontalAlignment: Text.AlignHCenter
-                        font.family: "GoMono Nerd Font Mono"
+                        font.family: theme.fontFamily
                         font.bold: true
                         font.pixelSize: 13
                     }
@@ -583,7 +496,7 @@ PanelWindow {
                             anchors.centerIn: parent
                             text: model.day
                             color: model.today ? theme.background : (model.month === monthGrid.month ? theme.text : theme.textFaint)
-                            font.family: "GoMono Nerd Font Mono"
+                            font.family: theme.fontFamily
                             font.pixelSize: 14
                             font.bold: model.today
                         }
@@ -593,7 +506,7 @@ PanelWindow {
                 Text {
                     text: Qt.formatDateTime(new Date(), "dddd, MMMM d, yyyy")
                     color: theme.textMuted
-                    font.family: "GoMono Nerd Font Mono"
+                    font.family: theme.fontFamily
                     font.pixelSize: 13
                     Layout.alignment: Qt.AlignHCenter
                 }

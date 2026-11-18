@@ -14,8 +14,9 @@ ShellRoot {
     property bool sessionLoaded: false
     property string barMenu: ""
     property var activeTrayItem: null
-    property int barHeight: 42
-    property int barReserve: 42
+    readonly property int dockSize: 46
+    readonly property int dockInset: 10
+    readonly property date now: shellClock.date
     property string panelOutputName: "DP-2"
     property string secondaryPanelOutputName: "DP-1"
     readonly property var panelScreen: screenByName(panelOutputName)
@@ -64,7 +65,8 @@ ShellRoot {
 
         return `${device.name || device.deviceName || "Glove80"}: ${gloveBatteryText}`;
     }
-    readonly property string clockText: Qt.formatDateTime(shellClock.date, "ddd MM/dd/yyyy hh:mm AP")
+    readonly property string clockText: Qt.formatTime(shellClock.date, "h:mm AP")
+    readonly property string dateText: Qt.formatDate(shellClock.date, "ddd, MMM d")
 
     function screenByName(name: string): var {
         for (const screen of Quickshell.screens) {

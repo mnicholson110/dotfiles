@@ -9,6 +9,8 @@ Button {
     property color accentColor: theme.primaryContainer
     property color borderColor: theme.border
 
+    required property string glyph
+
     focusPolicy: Qt.StrongFocus
 
     Theme {
@@ -17,22 +19,32 @@ Button {
 
     background: Rectangle {
         radius: theme.radius
-        color: root.down ? root.accentColor : (root.hovered ? root.hoverColor : root.bgColor)
+        color: root.down || root.activeFocus ? root.accentColor : (root.hovered ? root.hoverColor : root.bgColor)
         border.color: root.activeFocus ? theme.primaryStrong : root.borderColor
         border.width: 1
     }
 
-    contentItem: Text {
-        text: root.text
-        color: theme.text
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        wrapMode: Text.Wrap
-        lineHeight: 0.92
-        lineHeightMode: Text.ProportionalHeight
-        font.family: "GoMono Nerd Font Mono"
-        font.bold: true
-        font.pixelSize: 17
-    }
+    contentItem: Column {
+        spacing: 5
+        topPadding: Math.max(0, (height - symbol.implicitHeight - label.implicitHeight - spacing) / 2)
 
+        Text {
+            id: symbol
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.glyph
+            font.family: "GoMono Nerd Font Mono"
+            font.pixelSize: 21
+            color: theme.primary
+        }
+
+        Text {
+            id: label
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.text
+            font.family: theme.fontFamily
+            font.weight: Font.DemiBold
+            font.pixelSize: 14
+            color: theme.text
+        }
+    }
 }

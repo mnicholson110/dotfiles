@@ -219,7 +219,7 @@ PanelWindow {
         top: true
         right: true
     }
-    margins.top: shell.barHeight + 12
+    margins.top: 14
     margins.right: 14
 
     color: "transparent"
@@ -432,7 +432,7 @@ PanelWindow {
                                     text: card.appLabel
                                     color: theme.textFaint
                                     elide: Text.ElideRight
-                                    font.family: "GoMono Nerd Font Mono"
+                                    font.family: theme.fontFamily
                                     font.bold: true
                                     font.pixelSize: 11
                                 }
@@ -444,7 +444,7 @@ PanelWindow {
                                     wrapMode: Text.Wrap
                                     maximumLineCount: 3
                                     elide: Text.ElideRight
-                                    font.family: "GoMono Nerd Font Mono"
+                                    font.family: theme.fontFamily
                                     font.bold: true
                                     font.pixelSize: 14
                                 }
@@ -458,7 +458,7 @@ PanelWindow {
                                     wrapMode: Text.Wrap
                                     maximumLineCount: 6
                                     elide: Text.ElideRight
-                                    font.family: "GoMono Nerd Font Mono"
+                                    font.family: theme.fontFamily
                                     font.pixelSize: 12
                                 }
                             }
@@ -467,7 +467,7 @@ PanelWindow {
                                 id: dismissButton
                                 width: 22
                                 height: 22
-                                text: "x"
+                                text: "×"
 
                                 background: Rectangle {
                                     radius: theme.radius
@@ -481,7 +481,7 @@ PanelWindow {
                                     color: theme.textMuted
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
-                                    font.family: "GoMono Nerd Font Mono"
+                                    font.family: theme.fontFamily
                                     font.pixelSize: 12
                                     font.bold: true
                                 }
@@ -541,7 +541,7 @@ PanelWindow {
                                         horizontalAlignment: Text.AlignHCenter
                                         verticalAlignment: Text.AlignVCenter
                                         elide: Text.ElideRight
-                                        font.family: "GoMono Nerd Font Mono"
+                                        font.family: theme.fontFamily
                                         font.bold: true
                                         font.pixelSize: 12
                                     }
@@ -589,7 +589,7 @@ PanelWindow {
                                 visible: !rasterIcon.visible && !themeIcon.visible
                                 text: root.fallbackGlyph(card.notification)
                                 color: theme.text
-                                font.family: "GoMono Nerd Font Mono"
+                                font.family: theme.fontFamily
                                 font.pixelSize: 16
                                 font.bold: true
                             }

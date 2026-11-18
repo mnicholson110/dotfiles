@@ -15,27 +15,15 @@ PanelWindow {
 
     required property QtObject shell
     screen: shell.panelScreen
-    property real revealHeight: 0
     property var pendingAction: null
-    readonly property int gridColumns: 2
-    readonly property int gridSpacing: 14
-    readonly property int panelWidth: Math.max(360, Math.min(520, width - 56))
-    readonly property int buttonWidth: Math.floor((panelWidth - 48 - ((gridColumns - 1) * gridSpacing)) / gridColumns)
-    readonly property int buttonHeight: 88
-
-    anchors {
-        top: true
-        left: true
-        right: true
-    }
-    margins.top: shell.barHeight - 1
-
-    visible: shell.sessionOpen || root.revealHeight > 0
+    property int selected: 0
+    implicitWidth: Math.min(580, screen.width - 40)
+    implicitHeight: Math.min(290, screen.height - 40)
+    visible: shell.sessionOpen
     color: "transparent"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: shell.sessionOpen && root.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-    implicitHeight: revealHeight
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     readonly property var actions: [
         {
@@ -45,19 +33,19 @@ PanelWindow {
         },
         {
             id: "logout",
-            label: "Logout",
+            label: "Log out",
             command: ["uwsm", "stop"],
             detached: true
         },
         {
             id: "shutdown",
-            label: "Shutdown",
+            label: "Shut down",
             command: ["systemctl", "--no-block", "poweroff"],
             detached: true
         },
         {
             id: "reboot",
-            label: "Reboot",
+            label: "Restart",
             command: ["systemctl", "--no-block", "reboot"],
             detached: true
         }
@@ -79,80 +67,9 @@ PanelWindow {
         shell.runShell(action.command);
     }
 
-    function focusButton(index: int): void {
-        const button = actionButtons[index];
-        if (button)
-            button.forceActiveFocus();
-    }
-
-    function moveFocus(index: int, delta: int): void {
-        const nextIndex = index + delta;
-        if (nextIndex >= 0 && nextIndex < actions.length)
-            focusButton(nextIndex);
-    }
-
-    Connections {
-        target: shell
-
-        function onSessionOpenChanged(): void {
-            if (shell.sessionOpen && firstButton)
-                focusTimer.restart();
-
-            if (shell.sessionOpen) {
-                closeAnim.stop();
-                openAnim.start();
-            } else {
-                openAnim.stop();
-                closeAnim.start();
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        if (!shell.sessionOpen)
-            return;
-
-        openAnim.start();
-        focusTimer.restart();
-    }
-
-    NumberAnimation {
-        id: openAnim
-
-        target: root
-        property: "revealHeight"
-        from: root.revealHeight
-        to: card.implicitHeight + 12
-        duration: 155
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: [0.38, 1.21, 0.22, 1, 1, 1]
-        onStopped: {
-            if (shell.sessionOpen && firstButton)
-                focusTimer.restart();
-        }
-    }
-
-    NumberAnimation {
-        id: closeAnim
-
-        target: root
-        property: "revealHeight"
-        from: root.revealHeight
-        to: 0
-        duration: 120
-        easing.type: Easing.BezierSpline
-        easing.bezierCurve: [0.05, 0, 0.1333, 0.06, 0.1667, 0.4, 0.2083, 0.82, 0.25, 1, 1, 1]
-    }
-
-    Timer {
-        id: focusTimer
-
-        interval: 60
-        repeat: false
-        onTriggered: {
-            if (shell.sessionOpen && firstButton)
-                firstButton.forceActiveFocus();
-        }
+    onVisibleChanged: if (visible) {
+        selected = 0;
+        card.forceActiveFocus();
     }
 
     Timer {
@@ -170,120 +87,81 @@ PanelWindow {
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        enabled: root.revealHeight > 0
-        onClicked: shell.closeOverlays()
-    }
-
     HyprlandFocusGrab {
-        active: shell.sessionOpen && root.visible && root.revealHeight > 0
-        windows: [QsWindow.window]
+        active: root.visible
+        windows: [root]
         onCleared: shell.closeOverlays()
     }
 
-    Item {
+    Rectangle {
+        id: card
         anchors.fill: parent
-        clip: true
-
-        Rectangle {
-            id: card
-
-            width: root.panelWidth
-            implicitHeight: actionGrid.implicitHeight + 48
-            height: implicitHeight
-            radius: theme.radius
-            topLeftRadius: 0
-            topRightRadius: 0
-            color: theme.surface
-            border.color: theme.borderStrong
-            border.width: 1
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: parent.border.width + 1
-                color: theme.surface
+        radius: 20
+        border.color: theme.borderStrong
+        color: theme.background
+        focus: true
+        Keys.onPressed: event => {
+            switch (event.key) {
+            case Qt.Key_Up: case Qt.Key_Left: case Qt.Key_K:
+                root.selected = Math.max(0, root.selected - 1);
+                break;
+            case Qt.Key_Down: case Qt.Key_Right: case Qt.Key_J:
+                root.selected = Math.min(root.actions.length - 1, root.selected + 1);
+                break;
+            case Qt.Key_Return: case Qt.Key_Enter: case Qt.Key_Space:
+                if (!event.isAutoRepeat)
+                    root.runAction(root.actions[root.selected]);
+                break;
+            case Qt.Key_Escape:
+                shell.closeOverlays();
+                break;
+            default: return;
             }
+            event.accepted = true;
+        }
 
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 28
+            spacing: 28
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 10
+                Components.ClockFace {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: Math.min(152, root.width * 0.26)
+                    Layout.preferredHeight: Layout.preferredWidth
+                    time: shell.now
+                }
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: shell.dateText
+                    font.family: theme.fontFamily
+                    font.pixelSize: 14
+                    color: theme.textMuted
+                }
             }
-
-            Keys.onEscapePressed: shell.closeOverlays()
-
-            GridLayout {
-                id: actionGrid
-
-                anchors.fill: parent
-                anchors.margins: 24
-                columns: root.gridColumns
-                columnSpacing: root.gridSpacing
-                rowSpacing: root.gridSpacing
-
+            Rectangle { Layout.fillHeight: true; implicitWidth: 1; color: theme.border }
+            Column {
+                Layout.fillWidth: true
+                spacing: 4
                 Repeater {
                     model: root.actions
-
-                    Components.ActionButton {
-                        id: button
-
+                    Text {
                         required property var modelData
                         required property int index
-
-                        objectName: modelData.id
+                        width: parent.width
+                        height: 44
+                        verticalAlignment: Text.AlignVCenter
                         text: modelData.label
-                        Layout.preferredWidth: root.buttonWidth
-                        Layout.preferredHeight: root.buttonHeight
-                        Layout.minimumWidth: root.buttonWidth
-                        Layout.minimumHeight: root.buttonHeight
-
-                        Component.onCompleted: {
-                            root.actionButtons[index] = button;
-                            if (index === 0)
-                                firstButton = button;
-                        }
-
-                        onClicked: root.runAction(modelData)
-
-                        Keys.onLeftPressed: event => {
-                            root.moveFocus(index, -1);
-                            event.accepted = true;
-                        }
-
-                        Keys.onRightPressed: event => {
-                            root.moveFocus(index, 1);
-                            event.accepted = true;
-                        }
-
-                        Keys.onUpPressed: event => {
-                            root.moveFocus(index, -root.gridColumns);
-                            event.accepted = true;
-                        }
-
-                        Keys.onDownPressed: event => {
-                            root.moveFocus(index, root.gridColumns);
-                            event.accepted = true;
-                        }
-
-                        Keys.onReturnPressed: event => {
-                            root.runAction(modelData);
-                            event.accepted = true;
-                        }
-
-                        Keys.onEnterPressed: event => {
-                            root.runAction(modelData);
-                            event.accepted = true;
-                        }
+                        color: index === root.selected ? theme.primaryStrong : theme.textFaint
+                        font.family: theme.fontFamily
+                        font.pixelSize: index === root.selected ? 29 : 20
+                        Behavior on font.pixelSize { NumberAnimation { duration: 100 } }
+                        TapHandler { onTapped: root.runAction(modelData) }
                     }
                 }
             }
         }
     }
-
-    property Item firstButton: null
-    property var actionButtons: []
 }

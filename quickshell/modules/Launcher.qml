@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
-import Quickshell.Widgets
 import "../components" as Components
 
 PanelWindow {
@@ -16,24 +15,14 @@ PanelWindow {
 
     required property QtObject shell
     screen: shell.panelScreen
-    property real revealHeight: 0
     property string searchText: ""
-    readonly property int panelWidth: Math.max(520, Math.min(760, width - 72))
-    readonly property int panelHeight: 536
-
-    anchors {
-        top: true
-        left: true
-        right: true
-    }
-    margins.top: shell.barHeight - 1
-
-    visible: shell.launcherOpen || root.revealHeight > 0
+    implicitWidth: Math.min(540, screen.width - 40)
+    implicitHeight: Math.min(396, screen.height - 40)
+    visible: shell.launcherOpen
     color: "transparent"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: shell.launcherOpen && root.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-    implicitHeight: revealHeight
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     readonly property var visibleApps: {
         const apps = DesktopEntries.applications.values.filter(app => !shell.isHiddenApp(app));
@@ -50,11 +39,6 @@ PanelWindow {
         const query = searchText.trim().toLowerCase();
         return query ? visibleApps.filter(app => root.matchesSearch(app, query)) : visibleApps;
     }
-    readonly property var recentApps: {
-        const apps = visibleApps.filter(app => shell.launcherHistoryRecentIndex(app) >= 0);
-        apps.sort((a, b) => shell.launcherHistoryRecentIndex(a) - shell.launcherHistoryRecentIndex(b));
-        return apps.slice(0, 5);
-    }
     readonly property bool commandMode: searchText.trim().length > 0 && filteredApps.length === 0
 
     function matchesSearch(app: DesktopEntry, query: string): bool {
@@ -70,24 +54,6 @@ PanelWindow {
         ].join(" ").toLowerCase();
 
         return haystack.includes(query);
-    }
-
-    function appGlyph(app: DesktopEntry): string {
-        const label = app ? (app.name || app.id || "?") : "?";
-        return label.slice(0, 1).toUpperCase();
-    }
-
-    function appIconSource(icon: string): url {
-        if (!icon)
-            return "";
-
-        if (icon.includes("?"))
-            icon = icon.split("?")[0];
-
-        if (icon.endsWith("-symbolic"))
-            return Quickshell.iconPath(icon.slice(0, -9), "");
-
-        return Quickshell.iconPath(icon, "");
     }
 
     function launchCurrent(): void {
@@ -135,487 +101,116 @@ PanelWindow {
             resetSelection();
     }
 
-    Connections {
-        target: shell
-
-        function onLauncherOpenChanged(): void {
-            if (shell.launcherOpen) {
-                root.searchText = "";
-                searchInput.text = "";
-                root.resetSelection();
-                focusTimer.restart();
-            }
-
-            if (shell.launcherOpen) {
-                closeAnim.stop();
-                openAnim.start();
-            } else {
-                openAnim.stop();
-                closeAnim.start();
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        if (!shell.launcherOpen)
-            return;
-
-        root.searchText = "";
-        searchInput.text = "";
-        root.resetSelection();
-        openAnim.start();
-        focusTimer.restart();
-    }
-
-    NumberAnimation {
-        id: openAnim
-
-        target: root
-        property: "revealHeight"
-        from: root.revealHeight
-        to: launcherCard.height + 16
-        duration: 155
-        easing.type: Easing.OutCubic
-        onStopped: {
-            if (shell.launcherOpen)
-                focusTimer.restart();
-        }
-    }
-
-    NumberAnimation {
-        id: closeAnim
-
-        target: root
-        property: "revealHeight"
-        from: root.revealHeight
-        to: 0
-        duration: 115
-        easing.type: Easing.InCubic
-    }
-
-    Timer {
-        id: focusTimer
-
-        interval: 60
-        repeat: false
-        onTriggered: {
-            if (shell.launcherOpen)
-                searchInput.forceActiveFocus();
-        }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        enabled: root.revealHeight > 0
-        onClicked: shell.closeOverlays()
+    onVisibleChanged: if (visible) {
+        searchInput.clear();
+        resetSelection();
+        searchInput.forceActiveFocus();
     }
 
     HyprlandFocusGrab {
-        active: shell.launcherOpen && root.visible && root.revealHeight > 0
-        windows: [QsWindow.window]
+        active: root.visible
+        windows: [root]
         onCleared: shell.closeOverlays()
     }
 
-    Item {
+    Rectangle {
         anchors.fill: parent
-        clip: true
-
-        Rectangle {
-            id: launcherCard
-
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: root.panelWidth
-            height: root.panelHeight
-            radius: theme.radius
-            topLeftRadius: 0
-            topRightRadius: 0
-            color: theme.surface
-            border.color: theme.primaryStrong
-            border.width: 1
-            clip: true
-
-            MouseArea {
-                anchors.fill: parent
-                acceptedButtons: Qt.LeftButton
+        color: theme.background
+        radius: 20
+        border.color: theme.borderStrong
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 24
+            spacing: 12
+            TextField {
+                id: searchInput
+                Layout.fillWidth: true
+                focus: true
+                placeholderText: "Search apps or type a command"
+                color: theme.text
+                placeholderTextColor: theme.textFaint
+                selectionColor: theme.primary
+                selectedTextColor: theme.background
+                font.family: theme.fontFamily
+                font.pixelSize: 21
+                padding: 0
+                selectByMouse: true
+                background: Item {}
+                onTextChanged: root.searchText = text
+                Keys.onPressed: event => {
+                    switch (event.key) {
+                    case Qt.Key_Escape:
+                        shell.closeOverlays();
+                        event.accepted = true;
+                        return;
+                    case Qt.Key_Return:
+                    case Qt.Key_Enter:
+                        root.launchCurrent();
+                        event.accepted = true;
+                        return;
+                    case Qt.Key_Down:
+                        root.moveSelection(1);
+                        event.accepted = true;
+                        return;
+                    case Qt.Key_Up:
+                        root.moveSelection(-1);
+                        event.accepted = true;
+                        return;
+                    case Qt.Key_PageDown:
+                        root.moveSelection(6);
+                        event.accepted = true;
+                        return;
+                    case Qt.Key_PageUp:
+                        root.moveSelection(-6);
+                        event.accepted = true;
+                        return;
+                    default:
+                        break;
+                    }
+                }
             }
-
-            Rectangle {
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 4
+            Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: theme.border }
+            Text {
+                visible: root.commandMode
+                text: "Run as shell command"
                 color: theme.primaryStrong
+                font.family: theme.fontFamily
+                font.pixelSize: 15
             }
-
-            Repeater {
-                model: 9
-
-                Rectangle {
+            ListView {
+                id: appList
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                model: root.filteredApps
+                boundsBehavior: Flickable.StopAtBounds
+                delegate: Item {
+                    id: result
+                    required property DesktopEntry modelData
                     required property int index
-
-                    x: -160 + index * 118
-                    y: 36 + index * 49
-                    width: 220
-                    height: 1
-                    rotation: -18
-                    opacity: 0.07
-                    color: theme.primaryStrong
-                }
-            }
-
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 16
-                spacing: 12
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 64
-                    radius: theme.radius
-                    color: theme.background
-                    border.color: searchInput.activeFocus ? theme.primaryStrong : theme.borderStrong
-                    border.width: 1
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
-                        spacing: 12
-
-                        Text {
-                            text: "ALT+D"
-                            color: theme.textFaint
-                            font.family: "GoMono Nerd Font Mono"
-                            font.bold: true
-                            font.pixelSize: 11
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-
-                        Rectangle {
-                            Layout.preferredWidth: 1
-                            Layout.preferredHeight: 30
-                            color: theme.borderStrong
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-
-                        TextField {
-                            id: searchInput
-
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                            placeholderText: "type app name, or enter a shell command"
-                            placeholderTextColor: theme.textFaint
-                            selectByMouse: true
-                            color: theme.text
-                            selectedTextColor: theme.background
-                            selectionColor: theme.primaryStrong
-                            font.family: "GoMono Nerd Font Mono"
-                            font.bold: true
-                            font.pixelSize: 18
-
-                            background: Item {}
-
-                            onTextChanged: {
-                                if (root.searchText !== text)
-                                    root.searchText = text;
-                            }
-
-                            Keys.onPressed: event => {
-                                switch (event.key) {
-                                case Qt.Key_Escape:
-                                    shell.closeOverlays();
-                                    event.accepted = true;
-                                    return;
-                                case Qt.Key_Return:
-                                case Qt.Key_Enter:
-                                    root.launchCurrent();
-                                    event.accepted = true;
-                                    return;
-                                case Qt.Key_Down:
-                                    root.moveSelection(1);
-                                    event.accepted = true;
-                                    return;
-                                case Qt.Key_Up:
-                                    root.moveSelection(-1);
-                                    event.accepted = true;
-                                    return;
-                                case Qt.Key_PageDown:
-                                    root.moveSelection(6);
-                                    event.accepted = true;
-                                    return;
-                                case Qt.Key_PageUp:
-                                    root.moveSelection(-6);
-                                    event.accepted = true;
-                                    return;
-                                default:
-                                    break;
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            width: 2
-                            height: 24
-                            radius: 1
-                            color: theme.primaryStrong
-                            Layout.alignment: Qt.AlignVCenter
-
-                            SequentialAnimation on opacity {
-                                running: shell.launcherOpen
-                                loops: Animation.Infinite
-                                NumberAnimation {
-                                    to: 0.2
-                                    duration: 460
-                                }
-                                NumberAnimation {
-                                    to: 1
-                                    duration: 460
-                                }
-                            }
-                        }
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: visible ? 34 : 0
-                    visible: root.recentApps.length > 0 && root.searchText.length === 0
-                    spacing: 8
-
-                    Text {
-                        text: "RECENT"
-                        color: theme.textFaint
-                        font.family: "GoMono Nerd Font Mono"
-                        font.bold: true
-                        font.pixelSize: 11
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Repeater {
-                        model: root.recentApps
-
-                        Rectangle {
-                            id: recentChip
-
-                            required property DesktopEntry modelData
-
-                            Layout.preferredWidth: Math.min(112, recentText.implicitWidth + 24)
-                            Layout.preferredHeight: 30
-                            radius: theme.radius
-                            color: recentHover.containsMouse ? theme.primaryStrong : theme.background
-                            border.color: recentHover.containsMouse ? theme.primaryStrong : theme.border
-                            border.width: 1
-
-                            Text {
-                                id: recentText
-
-                                anchors.centerIn: parent
-                                width: parent.width - 14
-                                text: recentChip.modelData.name || recentChip.modelData.id
-                                color: recentHover.containsMouse ? theme.background : theme.textMuted
-                                elide: Text.ElideRight
-                                horizontalAlignment: Text.AlignHCenter
-                                font.family: "GoMono Nerd Font Mono"
-                                font.bold: true
-                                font.pixelSize: 11
-                            }
-
-                            MouseArea {
-                                id: recentHover
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: shell.launchDesktopEntry(recentChip.modelData)
-                            }
-                        }
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    radius: theme.radius
-                    color: theme.background
-                    border.color: theme.border
-                    border.width: 1
-                    clip: true
-
-                    ListView {
-                        id: appList
-
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        clip: true
-                        spacing: 6
-                        boundsBehavior: Flickable.StopAtBounds
-                        model: root.filteredApps
-                        currentIndex: model.length > 0 ? 0 : -1
-                        keyNavigationWraps: false
-                        interactive: contentHeight > height
-                        cacheBuffer: 160
-
-                        delegate: Rectangle {
-                            id: appDelegate
-
-                            required property DesktopEntry modelData
-                            required property int index
-                            readonly property bool selected: appList.currentIndex === index
-
-                            width: ListView.view.width
-                            height: 54
-                            radius: theme.radius
-                            color: selected ? theme.surfaceStrong : (hoverArea.containsMouse ? theme.surfaceRaised : "transparent")
-                            border.color: selected ? theme.primaryStrong : (hoverArea.containsMouse ? theme.borderStrong : "transparent")
-                            border.width: 1
-
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 12
-                                anchors.rightMargin: 12
-                                spacing: 12
-
-                                Rectangle {
-                                    Layout.preferredWidth: 32
-                                    Layout.preferredHeight: 32
-                                    Layout.alignment: Qt.AlignVCenter
-                                    radius: theme.radius
-                                    color: appDelegate.selected ? theme.primaryStrong : theme.surfaceRaised
-                                    border.color: appDelegate.selected ? theme.primaryStrong : theme.border
-                                    border.width: 1
-
-                                    IconImage {
-                                        id: appIcon
-
-                                        anchors.centerIn: parent
-                                        width: 21
-                                        height: 21
-                                        asynchronous: true
-                                        source: root.appIconSource(appDelegate.modelData.icon)
-                                        visible: source !== ""
-                                        opacity: appDelegate.selected ? 1 : 0.92
-                                    }
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        visible: !appIcon.visible
-                                        text: root.appGlyph(appDelegate.modelData)
-                                        color: appDelegate.selected ? theme.background : theme.textMuted
-                                        font.family: "GoMono Nerd Font Mono"
-                                        font.bold: true
-                                        font.pixelSize: 14
-                                    }
-                                }
-
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    Layout.alignment: Qt.AlignVCenter
-                                    spacing: 1
-
-                                    Text {
-                                        text: appDelegate.modelData.name || appDelegate.modelData.id
-                                        color: appDelegate.selected ? theme.primaryStrong : theme.text
-                                        elide: Text.ElideRight
-                                        font.family: "GoMono Nerd Font Mono"
-                                        font.bold: true
-                                        font.pixelSize: 15
-                                        Layout.fillWidth: true
-                                    }
-
-                                    Text {
-                                        visible: (appDelegate.modelData.genericName || appDelegate.modelData.comment || "").length > 0
-                                        text: appDelegate.modelData.genericName || appDelegate.modelData.comment
-                                        color: appDelegate.selected ? theme.textMuted : theme.textFaint
-                                        elide: Text.ElideRight
-                                        font.family: "GoMono Nerd Font Mono"
-                                        font.pixelSize: 11
-                                        Layout.fillWidth: true
-                                    }
-                                }
-
-                                Text {
-                                    text: appDelegate.index + 1 < 10 ? "0" + (appDelegate.index + 1) : String(appDelegate.index + 1)
-                                    color: appDelegate.selected ? theme.primaryStrong : theme.textFaint
-                                    font.family: "GoMono Nerd Font Mono"
-                                    font.bold: true
-                                    font.pixelSize: 11
-                                    Layout.alignment: Qt.AlignVCenter
-                                }
-                            }
-
-                            MouseArea {
-                                id: hoverArea
-
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onEntered: appList.currentIndex = appDelegate.index
-                                onClicked: shell.launchDesktopEntry(appDelegate.modelData)
-                            }
-                        }
-
-                        ScrollBar.vertical: ScrollBar {
-                            policy: ScrollBar.AlwaysOn
-                            width: 5
-
-                            contentItem: Rectangle {
-                                radius: 2
-                                color: parent.size < 1 ? theme.primaryStrong : theme.borderStrong
-                                opacity: parent.size < 1 ? 0.95 : 0
-                            }
-
-                            background: Rectangle {
-                                color: "transparent"
-                            }
-                        }
-                    }
-
+                    readonly property bool selected: appList.currentIndex === index
+                    width: ListView.view.width
+                    height: 36
                     Rectangle {
-                        visible: root.commandMode
-                        anchors.fill: parent
-                        anchors.margins: 8
-                        radius: theme.radius
-                        color: "transparent"
-                        border.color: theme.borderStrong
-                        border.width: 1
-
-                        Column {
-                            anchors.centerIn: parent
-                            width: parent.width - 42
-                            spacing: 10
-
-                            Text {
-                                width: parent.width
-                                text: "EXEC SHELL"
-                                color: theme.text
-                                horizontalAlignment: Text.AlignHCenter
-                                font.family: "GoMono Nerd Font Mono"
-                                font.bold: true
-                                font.pixelSize: 15
-                            }
-
-                            Text {
-                                width: parent.width
-                                text: root.searchText.trim()
-                                color: theme.textMuted
-                                elide: Text.ElideRight
-                                horizontalAlignment: Text.AlignHCenter
-                                font.family: "GoMono Nerd Font Mono"
-                                font.pixelSize: 13
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.launchCurrent()
-                        }
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 2
+                        height: result.selected ? 18 : 0
+                        color: theme.primary
+                        Behavior on height { NumberAnimation { duration: 90 } }
                     }
+                    Text {
+                        anchors.fill: parent
+                        anchors.leftMargin: 12
+                        verticalAlignment: Text.AlignVCenter
+                        text: result.modelData.name || result.modelData.id
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        color: result.selected ? theme.primaryStrong : theme.textMuted
+                        font.family: theme.fontFamily
+                        font.pixelSize: 15
+                    }
+                    TapHandler { onTapped: shell.launchDesktopEntry(result.modelData) }
                 }
             }
         }

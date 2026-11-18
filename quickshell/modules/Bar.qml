@@ -1,31 +1,30 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Services.Mpris
 import Quickshell.Services.SystemTray
+import Quickshell.Wayland
 import Quickshell.Widgets
 import "../components" as Components
 
-
 PanelWindow {
     id: root
-
-    Components.Theme {
-        id: theme
-    }
-
     required property QtObject shell
     required property var panelScreen
-    screen: root.panelScreen
+    readonly property var player: Mpris.players.values.find(p => p.isPlaying && p.trackTitle) ?? null
+    readonly property bool expanded: hover.hovered || (shell.barMenu !== "" && shell.barPopupScreen === panelScreen)
+    screen: panelScreen
+    anchors.right: true
+    anchors.bottom: true
+    margins.right: shell.dockInset
+    margins.bottom: shell.dockInset
+    implicitHeight: shell.dockSize
+    implicitWidth: expanded ? Math.min(screen.width - 2 * shell.dockInset, details.implicitWidth + height + 30) : height
+    color: "transparent"
+    exclusiveZone: 0
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
-    anchors {
-        top: true
-        left: true
-        right: true
-    }
-
-    color: theme.background
-    implicitHeight: shell.barHeight
-    exclusiveZone: shell.barReserve
+    Components.Theme { id: theme }
 
     function trayIconSource(icon: string): url {
         if (!icon)
@@ -53,182 +52,95 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         color: theme.background
-        border.width: 0
+        radius: height / 2
+        border.color: theme.border
+        clip: true
+        HoverHandler { id: hover }
 
-        Rectangle {
+        RowLayout {
+            id: details
+            visible: root.expanded
             anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            height: 1
-            color: theme.borderStrong
-        }
+            anchors.leftMargin: 18
+            anchors.right: dial.left
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 12
 
-        Item {
-            id: titleStage
+            Row {
+                visible: SystemTray.items.values.length > 0
+                spacing: 8
+                Layout.alignment: Qt.AlignVCenter
 
-            anchors.centerIn: parent
-            width: Math.max(320, Math.min(460, parent.width * 0.42))
-            height: parent.height
+                Repeater {
+                    model: SystemTray.items.values
 
-            RowLayout {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.centerIn: parent
-                anchors.leftMargin: 44
-                anchors.rightMargin: 44
-                spacing: 10
+                    MouseArea {
+                        required property var modelData
 
-            }
-        }
+                        width: 18
+                        height: 18
+                        hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        cursorShape: Qt.PointingHandCursor
+                        opacity: containsMouse ? 1 : 0.78
 
-        Item {
-            id: leftZone
-
-            anchors.left: parent.left
-            anchors.right: titleStage.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.leftMargin: 14
-            anchors.rightMargin: 12
-            clip: true
-
-            RowLayout {
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 10
-
-                Row {
-                    visible: SystemTray.items.values.length > 0
-                    spacing: 8
-                    Layout.alignment: Qt.AlignVCenter
-
-                    Repeater {
-                        model: SystemTray.items.values
-
-                        MouseArea {
-                            required property var modelData
-
-                            width: 18
-                            height: 18
-                            hoverEnabled: true
-                            acceptedButtons: Qt.LeftButton | Qt.RightButton
-                            cursorShape: Qt.PointingHandCursor
-                            opacity: containsMouse ? 1 : 0.78
-
-                            onClicked: event => {
-                                if (event.button === Qt.LeftButton) {
-                                    if (modelData.hasMenu)
-                                        shell.toggleTrayMenu(modelData, root.panelScreen);
-                                    else
-                                        modelData.activate();
-                                } else {
-                                    if (modelData.hasMenu)
-                                        shell.toggleTrayMenu(modelData, root.panelScreen);
-                                    else
-                                        modelData.secondaryActivate();
-                                }
+                        onClicked: event => {
+                            if (event.button === Qt.LeftButton) {
+                                if (modelData.hasMenu)
+                                    shell.toggleTrayMenu(modelData, root.panelScreen);
+                                else
+                                    modelData.activate();
+                            } else {
+                                if (modelData.hasMenu)
+                                    shell.toggleTrayMenu(modelData, root.panelScreen);
+                                else
+                                    modelData.secondaryActivate();
                             }
+                        }
 
-                            IconImage {
-                                anchors.fill: parent
-                                asynchronous: true
-                                source: root.trayIconSource(parent.modelData.icon)
-                            }
+                        IconImage {
+                            anchors.fill: parent
+                            asynchronous: true
+                            source: root.trayIconSource(parent.modelData.icon)
                         }
                     }
                 }
+            }
 
-                Rectangle {
-                    visible: SystemTray.items.values.length > 0 && (shell.controllerBatteryText.length > 0 || shell.gloveBatteryText.length > 0 || shell.deathadderBatteryText.length > 0)
-                    Layout.preferredWidth: 1
-                    Layout.preferredHeight: 18
-                    color: theme.border
-                    Layout.alignment: Qt.AlignVCenter
-                }
 
+            Column {
+                Layout.fillWidth: true
+                spacing: 1
                 Text {
-                    visible: shell.controllerBatteryText.length > 0
-                    text: `PS5 ${shell.controllerBatteryText}`
-                    color: theme.textMuted
-                    font.family: "GoMono Nerd Font Mono"
-                    font.bold: true
-                    font.pixelSize: 12
-                    Layout.alignment: Qt.AlignVCenter
+                    width: parent.width
+                    text: root.player ? [root.player.trackArtist, root.player.trackTitle].filter(Boolean).join(" · ") : shell.dateText
+                    textFormat: Text.PlainText
+                    elide: Text.ElideRight
+                    color: theme.text
+                    font.family: theme.fontFamily
+                    font.pixelSize: 13
                 }
-
                 Text {
-                    visible: shell.gloveBatteryText.length > 0
-                    text: `GLV ${shell.gloveBatteryText}`
-                    color: theme.textMuted
-                    font.family: "GoMono Nerd Font Mono"
-                    font.bold: true
-                    font.pixelSize: 12
-                    Layout.alignment: Qt.AlignVCenter
+                    text: [shell.clockText, shell.controllerBatteryText && "PS5 " + shell.controllerBatteryText,
+                           shell.gloveBatteryText && "Glove80 " + shell.gloveBatteryText,
+                           shell.deathadderBatteryText && "Mouse " + shell.deathadderBatteryText].filter(Boolean).join("   ·   ")
+                    color: theme.textFaint
+                    font.family: theme.fontFamily
+                    font.pixelSize: 11
                 }
-
-                Text {
-                    visible: shell.deathadderBatteryText.length > 0
-                    text: `DA ${shell.deathadderBatteryText}`
-                    color: theme.textMuted
-                    font.family: "GoMono Nerd Font Mono"
-                    font.bold: true
-                    font.pixelSize: 12
-                    Layout.alignment: Qt.AlignVCenter
-                }
+                Layout.preferredWidth: Math.min(360, Math.max(children[0].implicitWidth, children[1].implicitWidth))
             }
         }
 
-        Item {
-            id: rightZone
-
-            anchors.left: titleStage.right
+        Components.ClockFace {
+            id: dial
             anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.leftMargin: 12
-            anchors.rightMargin: 14
-            clip: true
-
-            Item {
-                id: clockHitbox
-
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                width: clockRow.implicitWidth
-                height: 28
-
-                RowLayout {
-                    id: clockRow
-
-                    anchors.centerIn: parent
-                    spacing: 8
-
-                    Rectangle {
-                        width: 7
-                        height: 7
-                        radius: 1
-                        color: shell.barMenu === "clock" ? theme.primaryStrong : theme.textFaint
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Text {
-                        text: shell.clockText
-                        color: theme.text
-                        font.family: "GoMono Nerd Font Mono"
-                        font.bold: true
-                        font.pixelSize: 13
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: shell.toggleClockMenu(root.panelScreen)
-                }
-            }
+            anchors.rightMargin: 5
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.height - 10
+            height: width
+            time: shell.now
+            TapHandler { onTapped: shell.toggleClockMenu(root.panelScreen) }
         }
     }
 }
