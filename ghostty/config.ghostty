@@ -4,7 +4,6 @@ theme = Kitty Default
 background-opacity = 1
 confirm-close-surface = false
 macos-titlebar-style = tabs
-command = direct:tmux new-session
 
 # Copy and clear a selection, or pass Ctrl+C through when there's no selection.
 selection-clear-on-copy = true
