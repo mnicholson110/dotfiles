@@ -1,0 +1,14 @@
+font-family = GoMono Nerd Font
+font-size = 18
+theme = Kitty Default
+background-opacity = 1
+confirm-close-surface = false
+macos-titlebar-style = tabs
+command = direct:tmux new-session
+
+# Copy and clear a selection, or pass Ctrl+C through when there's no selection.
+selection-clear-on-copy = true
+keybind = performable:ctrl+c=copy_to_clipboard:plain
+keybind = ctrl+v=paste_from_clipboard
+keybind = shift+enter=text:\x1b\r
+

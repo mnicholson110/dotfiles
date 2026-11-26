@@ -35,7 +35,7 @@ ShellRoot {
     }
     property var barPopupScreen: panelScreen
     property string pendingOverlay: ""
-    property string terminal: "kitty"
+    property string terminal: "ghostty"
     property list<string> launcherHistoryIds: []
     property int launcherHistoryLimit: 10
     property string controllerBatteryText: ""

@@ -228,7 +228,7 @@ hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "default
 
 local mainMod = "ALT"
 
-hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd("kitty"))
+hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("qs ipc call myshell toggleSession"))
 hl.bind(mainMod .. " + V", hl.dsp.window.float())
