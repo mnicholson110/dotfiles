@@ -10,6 +10,7 @@ hl.monitor({
   mode = "3840x2160@60",
   position = "0x-1440",
   scale = 1.5,
+  cm = "srgb",
 })
 
 hl.monitor({
@@ -17,6 +18,7 @@ hl.monitor({
   mode = "2560x1440@144",
   position = "0x0",
   scale = 1,
+  cm = "srgb",
 })
 
 hl.workspace_rule({ workspace = "1", monitor = "DP-2" })
@@ -161,6 +163,10 @@ hl.env("XDG_SESSION_TYPE", "wayland")
 ----------------
 
 hl.config({
+  render = {
+    cm_auto_hdr = 0,
+  },
+
   input = {
     kb_layout = "us",
     kb_variant = "",
